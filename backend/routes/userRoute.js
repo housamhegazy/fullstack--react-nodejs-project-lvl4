@@ -1,13 +1,29 @@
 const express = require("express");
 const router = express.Router();
 const User = require("../models/userModel");
+const mongoose = require("mongoose");
+
 // =========================import cloudinary config ==================================
 const {upload, cloudinary,streamUpload } = require('../config/cloudinaryConfig')
 // ********************** تعريف دالة handleError هنا **********************
 const handleError = require("../utils/errorMiddleware");
 //======================================= edite profile pic ==========================
+
+router.get("/api/profile", async (req, res) => {
+  try {
+    const userId = req.user._id; // يفترض أن isAuthenticated يضيف معرف المستخدم
+    const user = await User.findById(userId).select('-password');
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json(user);
+  } catch (error) {
+    return handleError(res, error);
+  }
+});
+
 router.put(
-  "/update-profile",
+  "/api/users/update-profile",
   upload.single("avatar"), // Multer middleware for local uploads
   async (req, res) => {
     try {

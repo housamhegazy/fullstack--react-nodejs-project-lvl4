@@ -12,18 +12,19 @@ const { notFound, errorHandler } = require('./utils/errorMiddleware');
 // استيراد مسارات وميدل ويرز (افترض وجود هذه الملفات في مشروعك)
 // <--- استيراد Middleware التحقق
 const isAuthenticated = require("./middleware/authMiddleware");
-const allRoutes = require("./routes/allRoutes");
+const mainRoute = require("./routes/mainpageRoute");
 const registerRoute = require("./routes/registerRoute");
 const signinRoute = require("./routes/signinRoute");
-const getUserRoute = require("./routes/GetUserRoute");
+// const getUserRoute = require("./routes/GetUserRoute");
 const signoutRoute = require("./routes/signoutRoute");
-const authRoute = require("./routes/authRoute");
+const socialAuthRoute = require("./routes/socialAuthRoute");
 const forgotPasswordRoute = require("./routes/resetPasswordRoutes/forgetPasswordRoute"); 
 const resetPasswordRoute = require("./routes/resetPasswordRoutes/resetPasswordRoute"); 
-const addCustomerRoute = require("./routes/addCustomerRoute")
-const updateUserRoute = require('./routes/updateUserRoute');
+const customersRoute = require("./routes/customersRoute")
+const userRoute = require('./routes/userRoute');
 const localUpload = require("./routes/localUploadRoute");
 const cloudUploadRoute =require("./routes/clouduploadRoute")
+const searchRoute = require("./routes/searchRoute")
 
 
 const MongoStore = require("connect-mongo"); 
@@ -79,16 +80,16 @@ app.use("/api/signin", signinRoute);
 app.use("/api/signout", signoutRoute);
 
 //google signin
-app.use("", authRoute);
+app.use("", socialAuthRoute);
 app.use("/api/forgot-password", forgotPasswordRoute); // <--- إضافة هذا
 app.use("/api/reset-password", resetPasswordRoute); // <--- إضافة هذا
 app.use("",isAuthenticated,localUpload)
-app.use('/api/users',  isAuthenticated, updateUserRoute); 
+app.use('',  isAuthenticated, userRoute); 
 
-app.use("/api/profile", isAuthenticated, getUserRoute);
-app.use("", isAuthenticated, allRoutes);
-app.use("", isAuthenticated, addCustomerRoute);
+app.use("", isAuthenticated, mainRoute);
+app.use("", isAuthenticated, customersRoute);
 app.use("",isAuthenticated,cloudUploadRoute)
+app.use("",isAuthenticated,searchRoute)
 
 // ********************** الاتصال بـ MongoDB **********************
 
