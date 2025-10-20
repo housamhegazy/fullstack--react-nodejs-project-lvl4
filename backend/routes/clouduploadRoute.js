@@ -8,7 +8,7 @@ const {
   streamUpload,
 } = require("../config/cloudinaryConfig");
 // ********************** تعريف دالة handleError هنا **********************
-const handleError = require("../handleError/handleError");
+const handleError = require("../utils/errorMiddleware");
 
 //=======================================================================================
 //=====================(1) store image in cloudinary and send data to mongo db ==========

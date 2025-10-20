@@ -3,15 +3,8 @@ const router = express.Router();
 const UserSchema = require("../models/userModel"); // استيراد نموذج المستخدم
 
 // دالة handleError (يمكنك وضعها في ملف منفصل واستيرادها)
-const handleError = (
-  res,
-  error,
-  statusCode = 500,
-  defaultMessage = "An internal server error occurred."
-) => {
-  console.error("API Error:", error);
-  res.status(statusCode).json({ message: error.message || defaultMessage });
-};
+const handleError = require("../utils/errorMiddleware");
+
 
 router.post("", async (req, res) => {
   const { fullName, email, password, confirmPassword } = req.body;

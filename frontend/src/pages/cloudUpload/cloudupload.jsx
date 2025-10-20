@@ -32,12 +32,14 @@ const CloudinarUploud = () => {
   const [allImgs, setAllImgs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [deletingId, setDeletingId] = useState(null);
-  const [deletingAll, setDeletingAll] = useState(false);
+  const [deletingId, setDeletingId] = useState(null); // loading for delete image icon btn
+  const [deletingAll, setDeletingAll] = useState(false); //loading for delet all btn
+  const [imagesLoading, setImagesLoading] = useState(true); // loading during fetch images
 
   //======================================= FETCHING PAGE DATA =================================================
 
   const getImages = async () => {
+    setImagesLoading(true);
     try {
       const result = await fetch(
         `http://localhost:3000/api/allimages/${user && user._id}`,
@@ -57,6 +59,8 @@ const CloudinarUploud = () => {
     } catch (err) {
       console.error(err);
       setError(err.message + " error uploading image");
+    } finally {
+      setImagesLoading(false);
     }
   };
 
@@ -136,7 +140,8 @@ const CloudinarUploud = () => {
         // 💡 الخطوة الحاسمة: تفريغ قيمة حقل الإدخال في DOM
         const fileInput = document.getElementById("avatar-upload");
         if (fileInput) {
-            fileInput.value = ''; // ⬅️ هذا هو ما يفرغ الملف القديم من الذاكرة
+          // @ts-ignore
+          fileInput.value = ""; // ⬅️ هذا هو ما يفرغ الملف القديم من الذاكرة
         }
       }
     }
@@ -217,7 +222,7 @@ const CloudinarUploud = () => {
         console.error(err);
         setError(err.message + " error deleting images");
       } finally {
-        setDeletingAll(false); 
+        setDeletingAll(false);
       }
     }
   };
@@ -231,6 +236,24 @@ const CloudinarUploud = () => {
     if (isSmall) return 2; // شاشة صغيرة (sm)
     return 1; // شاشة صغيرة جداً (xs)
   };
+
+  // 💡 دالة لإنشاء هيكل (Skeleton) مؤقت للمعرض أثناء التحميل
+  const LoadingSkeleton = () => (
+    <ImageList
+      cols={getCols()}
+      rowHeight={200}
+      gap={7}
+      sx={{ width: "100%", height: 600 }}
+    >
+      {/* إنشاء عدد من 6 إلى 9 مربعات وهمية */}
+      {[...Array(getCols() * 3)].map((_, index) => (
+        <ImageListItem key={index}>
+          <Skeleton variant="rectangular" width="100%" height={200} />
+        </ImageListItem>
+      ))}
+    </ImageList>
+  );
+
   return (
     <Box component={"form"}>
       <Typography
@@ -244,7 +267,9 @@ const CloudinarUploud = () => {
         }}
       >
         {" "}
-        <Cloud sx={{ ml: 2, fontSize: 100 }} />
+        <Cloud
+          sx={{ ml: 2, fontSize: 100, color: theme.palette.primary.light }}
+        />
         Cloudinary Upload
       </Typography>
       {/* Upload Section */}
@@ -311,98 +336,112 @@ const CloudinarUploud = () => {
           },
         }}
       >
-        upload
-        <Upload />
+        {loading ? (
+          <CircularProgress size={20} />
+        ) : (
+          <>
+            upload <Upload />
+          </>
+        )}{" "}
+        {/* ✅ مهم جداً */}
       </Button>
       <Divider sx={{ mb: 5 }} component={"h3"}>
         <Chip sx={{ fontSize: "25px" }} label="All Photos" size="medium" />
       </Divider>
-      {/* القسم الخاص بزر حذف الجميع */}     {" "}
-      {allImgs?.length > 0 && (
-        <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
-          <Button
-            onClick={handleDeleteAll}
-            variant="contained"
-            color="error" // 💡 استخدام لون الخطأ (الأحمر) ليتناسب مع الحذف
-            disabled={deletingAll} // 🚫 تعطيل أثناء التحميل
-            startIcon={
-              deletingAll ? (
-                <CircularProgress size={20} color="inherit" />
-              ) : (
-                <Delete />
-              )
-            } // ⚙️ إضافة أيقونة التحميل/الحذف
-            sx={{
-              // 🖌️ تنسيق إضافي لجعله يبدو بارزاً
-              borderRadius: 2,
-              py: 1,
-            }}
-          >
-            {deletingAll ? "Deleting All..." : "Delete All Photos"} 
-          </Button>
-        </Box>
-      )}
-      {allImgs?.length < 1 && (
-        <Typography sx={{ textAlign: "center" }}>
-          No photos added yet{" "}
-        </Typography>
-      )}
-      <ImageList
-        sx={{ width: "100%", height: 600 }}
-        cols={getCols()} // هذا هو الاستخدام الصحيح
-        rowHeight={200}
-        gap={7}
-      >
-        {allImgs &&
-          allImgs.map((img) => {
-            // 1. ✅ تحقق مما إذا كانت هذه الصورة هي قيد الحذف
-            const isDeleting = deletingId === img.public_id;
-            return (
-              <Box key={img.public_id}>
-                <ImageListItem>
-                  <img
-                    srcSet={`${img.imageUrl}?w=164&h=164&fit=crop&auto=format&dpr=2 2x`}
-                    src={img.imageUrl}
-                    alt={""}
-                    loading="lazy"
-                    style={{
-                      maxHeight: "200px",
-                    }}
-                    width={"cover"}
-                    // onLoad={() => setIsLoaded(true)} // تحديث الحالة عند اكتمال التحميل
-                  />
-                </ImageListItem>
-                <Box
-                  sx={{
-                    height: "10%",
-                    backgroundColor: "#12638773",
-                    borderRadius: "0 0 20px 20px",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
-                >
-                  {isDeleting ? (
-                    <CircularProgress size={24} color="error" />
+      {/* القسم الخاص بزر حذف الجميع */}
+
+      {imagesLoading ? (
+        // 1. إذا كان التحميل جارياً، اعرض الهيكل المؤقت
+        <LoadingSkeleton />
+      ) : (
+        <>
+          {allImgs?.length > 0 && (
+            <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
+              <Button
+                onClick={handleDeleteAll}
+                variant="contained"
+                color="error" // 💡 استخدام لون الخطأ (الأحمر) ليتناسب مع الحذف
+                disabled={deletingAll} // 🚫 تعطيل أثناء التحميل
+                startIcon={
+                  deletingAll ? (
+                    <CircularProgress size={20} color="inherit" />
                   ) : (
-                    <IconButton
-                      onClick={async () => {
-                        const publicId = await img.public_id;
-                        const owner = img.owner;
-                        handleDelete(publicId, owner);
+                    <Delete />
+                  )
+                } // ⚙️ إضافة أيقونة التحميل/الحذف
+                sx={{
+                  // 🖌️ تنسيق إضافي لجعله يبدو بارزاً
+                  borderRadius: 2,
+                  py: 1,
+                }}
+              >
+                {deletingAll ? "Deleting All..." : "Delete All Photos"} 
+              </Button>
+            </Box>
+          )}
+          {allImgs?.length < 1 && (
+            <Typography sx={{ textAlign: "center" }}>
+              No photos added yet{" "}
+            </Typography>
+          )}
+          <ImageList
+            sx={{ width: "100%", height: 600 }}
+            cols={getCols()} // هذا هو الاستخدام الصحيح
+            rowHeight={200}
+            gap={7}
+          >
+            {allImgs &&
+              allImgs.map((img) => {
+                // 1. ✅ تحقق مما إذا كانت هذه الصورة هي قيد الحذف
+                const isDeleting = deletingId === img.public_id;
+                return (
+                  <Box key={img.public_id}>
+                    <ImageListItem>
+                      <img
+                        srcSet={`${img.imageUrl}?w=164&h=164&fit=crop&auto=format&dpr=2 2x`}
+                        src={img.imageUrl}
+                        alt={""}
+                        loading="lazy"
+                        style={{
+                          maxHeight: "200px",
+                        }}
+                        width={"cover"}
+                        // onLoad={() => setIsLoaded(true)} // تحديث الحالة عند اكتمال التحميل
+                      />
+                    </ImageListItem>
+                    <Box
+                      sx={{
+                        height: "10%",
+                        backgroundColor: "#12638773",
+                        borderRadius: "0 0 20px 20px",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
                       }}
-                      color="error"
-                      // يمكن تعطيل الزر إذا كانت عملية حذف أخرى جارية
-                      disabled={deletingId !== null}
                     >
-                      <Delete />
-                    </IconButton>
-                  )}
-                </Box>
-              </Box>
-            );
-          })}
-      </ImageList>
+                      {isDeleting ? (
+                        <CircularProgress size={24} color="error" />
+                      ) : (
+                        <IconButton
+                          onClick={async () => {
+                            const publicId = await img.public_id;
+                            const owner = img.owner;
+                            handleDelete(publicId, owner);
+                          }}
+                          color="error"
+                          // يمكن تعطيل الزر إذا كانت عملية حذف أخرى جارية
+                          disabled={deletingId !== null}
+                        >
+                          <Delete />
+                        </IconButton>
+                      )}
+                    </Box>
+                  </Box>
+                );
+              })}
+          </ImageList>
+        </>
+      )}
     </Box>
   );
 };

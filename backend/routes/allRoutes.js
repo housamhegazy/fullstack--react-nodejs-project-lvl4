@@ -1,15 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const CustomerModel = require("../models/customesSchema"); // استيراد نموذج العميل
-
 // ********************** تعريف دالة handleError هنا **********************
-const handleError = (res, error) => {
-  console.error("API Error:", error); // تسجيل الخطأ في الـ console لـ debugging
-  res.status(500).json({
-    message: "An internal server error occurred.",
-    error: error.message,
-  });
-};
+const handleError = require("../utils/errorMiddleware");
 // **************************************************************************
 
 // المسار الافتراضي
@@ -25,7 +18,7 @@ router.get("/api/allcustomers", async (req, res) => {
     const users = await CustomerModel.find({ owner: req.user.id }); // Fetch all users
     res.status(200).json(users); // 200 OK
   } catch (error) {
-    handleError(res, error);
+    return handleError(res, error);
   }
 });
 // 3. Route to Get one User (GET)
@@ -37,7 +30,7 @@ router.get("/api/allcustomers/:id", async (req, res) => {
     }); // Fetch all users
     res.status(200).json(customer); // 200 OK
   } catch (error) {
-    handleError(res, error);
+    return handleError(res, error);
   }
 });
 // 4. Route to open one User in edit page (GET)
@@ -49,7 +42,7 @@ router.get("/api/edit/:id", async (req, res) => {
     }); // Fetch one customer
     res.status(200).json(customer); // 200 OK
   } catch (error) {
-    handleError(res, error);
+    return handleError(res, error);
   }
 });
 
@@ -73,7 +66,7 @@ router.put("/api/editcustomer/:id", async (req, res) => {
 
     res.status(200).json(customer); // إرجاع المستخدم المحدّث
   } catch (error) {
-    handleError(res, error);
+    return handleError(res, error);
   }
 });
 //6-delete function
@@ -85,7 +78,7 @@ router.delete("/api/allcustomers/:id", async (req, res) => {
     }); // Fetch all users
     res.status(200).json(customer); // 200 OK
   } catch (error) {
-    handleError(res, error);
+    return handleError(res, error);
   }
 });
 //search function
@@ -119,7 +112,7 @@ router.get("/api/search", async (req, res) => {
     }); // Fetch all users
     res.status(200).json(customer); // 200 OK
   } catch (error) {
-    handleError(res, error);
+    return handleError(res, error);
   }
 });
 

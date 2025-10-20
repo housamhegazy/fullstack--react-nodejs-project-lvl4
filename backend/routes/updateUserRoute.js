@@ -4,7 +4,7 @@ const User = require("../models/userModel");
 // =========================import cloudinary config ==================================
 const {upload, cloudinary,streamUpload } = require('../config/cloudinaryConfig')
 // ********************** تعريف دالة handleError هنا **********************
-const handleError = require('../handleError/handleError')
+const handleError = require("../utils/errorMiddleware");
 //======================================= edite profile pic ==========================
 router.put(
   "/update-profile",

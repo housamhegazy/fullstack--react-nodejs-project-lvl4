@@ -8,7 +8,7 @@ const path = require("path");
 require("dotenv").config();
 require("./config/passport"); // استيراد إعداد passport
 const methodOverride = require("method-override");
-
+const { notFound, errorHandler } = require('./utils/errorMiddleware');
 // استيراد مسارات وميدل ويرز (افترض وجود هذه الملفات في مشروعك)
 // <--- استيراد Middleware التحقق
 const isAuthenticated = require("./middleware/authMiddleware");
@@ -107,6 +107,13 @@ liveReloadServer.server.once("connection", () => {
   }, 100);
 });
 //end livereload
+
+// 1. معالج أخطاء المسارات غير الموجودة (404)
+app.use(notFound);
+
+// 2. معالج الأخطاء النهائي (General Error Handler)
+app.use(errorHandler);
+
 mongoose
   .connect(
     "mongodb+srv://geohousam_db_user:UAc4KjEnIs8qVEEJ@addcustomercluster.xoewuxa.mongodb.net/all-data?retryWrites=true&w=majority&appName=addcustomercluster",

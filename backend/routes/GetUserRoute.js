@@ -3,16 +3,7 @@ const mongoose = require("mongoose");
 const router = express.Router();
 const isAuthenticated = require("../middleware/authMiddleware");
 const User = require("../models/userModel");
-
-const handleError = (
-  res,
-  error,
-  statusCode = 500,
-  defaultMessage = "An internal server error occurred."
-) => {
-  console.error("API Error:", error);
-  res.status(statusCode).json({ message: error.message || defaultMessage });
-};
+const handleError = require("../utils/errorMiddleware");
 
 router.get("", isAuthenticated, async (req, res) => {
   try {
@@ -23,7 +14,7 @@ router.get("", isAuthenticated, async (req, res) => {
     }
     res.status(200).json(user);
   } catch (error) {
-    handleError(res, error);
+    return handleError(res, error);
   }
 });
 
