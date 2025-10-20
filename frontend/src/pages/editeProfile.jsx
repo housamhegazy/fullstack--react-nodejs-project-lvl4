@@ -119,6 +119,14 @@ const EditProfile = () => {
       );
     } finally {
       setLoading(false);
+      setSelectedFile(null);
+      setPreview(null); // يفضل تفريغ المعاينة أيضاً
+      // 💡 الخطوة الحاسمة: تفريغ قيمة حقل الإدخال في DOM
+      const fileInput = document.getElementById("avatar-upload");
+      if (fileInput) {
+        // @ts-ignore
+        fileInput.value = ""; // ⬅️ هذا هو ما يفرغ الملف القديم من الذاكرة
+      }
     }
   };
 

@@ -33,6 +33,7 @@ const CloudinarUploud = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [deletingId, setDeletingId] = useState(null);
+  const [deletingAll, setDeletingAll] = useState(false);
 
   //======================================= FETCHING PAGE DATA =================================================
 
@@ -125,20 +126,24 @@ const CloudinarUploud = () => {
           text: "Your image has added successfully.",
           icon: "success",
         });
-        
       } catch (err) {
         console.error(err);
         setError(err.message + " error uploading image");
       } finally {
         setLoading(false);
-        setSelectedFile(null)
+        setSelectedFile(null);
+        setPreview(null); // يفضل تفريغ المعاينة أيضاً
+        // 💡 الخطوة الحاسمة: تفريغ قيمة حقل الإدخال في DOM
+        const fileInput = document.getElementById("avatar-upload");
+        if (fileInput) {
+            fileInput.value = ''; // ⬅️ هذا هو ما يفرغ الملف القديم من الذاكرة
+        }
       }
     }
   };
 
   //============================ Delete image =====================================
   const handleDelete = async (publicId, owner) => {
-    
     const result = await Swal.fire({
       title: "Are you sure?",
       text: "You won't be able to revert this!",
@@ -149,9 +154,9 @@ const CloudinarUploud = () => {
       confirmButtonText: "Yes, delete it!",
     });
     if (result.isConfirmed) {
-      setDeletingId(publicId)
+      setDeletingId(publicId);
       try {
-            const encodedPublicId = encodeURIComponent(publicId); // تشفير المسار حتى يستطيع الباك اند قرائته
+        const encodedPublicId = encodeURIComponent(publicId); // تشفير المسار حتى يستطيع الباك اند قرائته
 
         const response = await fetch(
           `http://localhost:3000/api/allImages/delete/${encodedPublicId}/${
@@ -170,12 +175,49 @@ const CloudinarUploud = () => {
           const errorData = await response.json();
           throw new Error(errorData.message || "فشل الحذف.");
         }
-        
       } catch (err) {
         console.error(err);
         setError(err.message + " error deleting image image");
       } finally {
         setDeletingId(null);
+      }
+    }
+  };
+
+  //==============================================delete all images ===============================
+  const handleDeleteAll = async () => {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    });
+    if (result.isConfirmed) {
+      setDeletingAll(true);
+      try {
+        const response = await fetch(
+          `http://localhost:3000/api/allImages/deleteall/${user && user._id}`,
+          {
+            method: "delete",
+            credentials: "include",
+          }
+        );
+        if (response.ok) {
+          // ✅ استدعاء دالة جلب الصور لتحديث الـ state
+          await getImages();
+          Swal.fire("Deleted!", "تم حذف الصور بنجاح.", "success");
+        } else {
+          const errorData = await response.json();
+          throw new Error(errorData.message || "فشل الحذف.");
+        }
+      } catch (err) {
+        console.error(err);
+        setError(err.message + " error deleting images");
+      } finally {
+        setDeletingAll(false); 
       }
     }
   };
@@ -275,6 +317,31 @@ const CloudinarUploud = () => {
       <Divider sx={{ mb: 5 }} component={"h3"}>
         <Chip sx={{ fontSize: "25px" }} label="All Photos" size="medium" />
       </Divider>
+      {/* القسم الخاص بزر حذف الجميع */}     {" "}
+      {allImgs?.length > 0 && (
+        <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
+          <Button
+            onClick={handleDeleteAll}
+            variant="contained"
+            color="error" // 💡 استخدام لون الخطأ (الأحمر) ليتناسب مع الحذف
+            disabled={deletingAll} // 🚫 تعطيل أثناء التحميل
+            startIcon={
+              deletingAll ? (
+                <CircularProgress size={20} color="inherit" />
+              ) : (
+                <Delete />
+              )
+            } // ⚙️ إضافة أيقونة التحميل/الحذف
+            sx={{
+              // 🖌️ تنسيق إضافي لجعله يبدو بارزاً
+              borderRadius: 2,
+              py: 1,
+            }}
+          >
+            {deletingAll ? "Deleting All..." : "Delete All Photos"} 
+          </Button>
+        </Box>
+      )}
       {allImgs?.length < 1 && (
         <Typography sx={{ textAlign: "center" }}>
           No photos added yet{" "}
@@ -315,24 +382,22 @@ const CloudinarUploud = () => {
                     alignItems: "center",
                   }}
                 >
-
-                {isDeleting ? ( <CircularProgress size={24} color="error" />
-                    ): 
-                  <IconButton
-                    onClick={async () => {
-                      const publicId = await img.public_id;
-                      const owner = img.owner;
-                      handleDelete(publicId, owner);
-                    }}
-                    color="error"
-                    // يمكن تعطيل الزر إذا كانت عملية حذف أخرى جارية
-                    disabled={deletingId !== null}
-                  >
-
-                    <Delete />
-                    
-                  </IconButton>
-                }
+                  {isDeleting ? (
+                    <CircularProgress size={24} color="error" />
+                  ) : (
+                    <IconButton
+                      onClick={async () => {
+                        const publicId = await img.public_id;
+                        const owner = img.owner;
+                        handleDelete(publicId, owner);
+                      }}
+                      color="error"
+                      // يمكن تعطيل الزر إذا كانت عملية حذف أخرى جارية
+                      disabled={deletingId !== null}
+                    >
+                      <Delete />
+                    </IconButton>
+                  )}
                 </Box>
               </Box>
             );
