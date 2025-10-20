@@ -3,16 +3,8 @@ const router = express.Router();
 const User = require("../../models/userModel");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
-
-const handleError = (
-  res,
-  error,
-  statusCode = 500,
-  defaultMessage = "An internal server error occurred."
-) => {
-  console.error("API Error:", error);
-  res.status(statusCode).json({ message: error.message || defaultMessage });
-};
+// ********************** تعريف دالة handleError هنا **********************
+const handleError = require("../../utils/errorMiddleware");
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -20,9 +12,12 @@ const transporter = nodemailer.createTransport({
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_APP_PASSWORD,
   },
+  tls: {
+    rejectUnauthorized: false,
+  },
 });
 
-router.post("/", async (req, res) => {
+router.post("", async (req, res) => {
   const { email } = req.body;
   let user; // <--- التصحيح 1: تعريف المتغير هنا ليكون متاحاً في كل مكان
 
@@ -74,7 +69,7 @@ router.post("/", async (req, res) => {
       user.passwordResetExpires = undefined;
       await user.save();
     }
-    handleError(
+    return handleError(
       res,
       error,
       500,

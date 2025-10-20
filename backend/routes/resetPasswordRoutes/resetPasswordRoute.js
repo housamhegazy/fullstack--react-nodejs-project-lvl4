@@ -5,10 +5,8 @@ const router = express.Router();
 const User = require('../../models/userModel');
 const crypto = require('crypto');
 
-const handleError = (res, error, statusCode = 500, defaultMessage = "An internal server error occurred.") => {
-    console.error("API Error:", error);
-    res.status(statusCode).json({ message: error.message || defaultMessage });
-};
+// ********************** تعريف دالة handleError هنا **********************
+const handleError = require("../../utils/errorMiddleware");
 
 // مسار GET: للتحقق من صلاحية الرمز المميز (Token)
 router.get('/:token', async (req, res) => {
@@ -27,7 +25,7 @@ router.get('/:token', async (req, res) => {
 
         res.status(200).json({ message: 'الرمز المميز صالح.' });
     } catch (error) {
-        handleError(res, error);
+        return handleError(res, error);
     }
 });
 
@@ -55,7 +53,7 @@ router.post('/:token', async (req, res) => {
 
         res.status(200).json({ message: 'تمت إعادة تعيين كلمة المرور بنجاح.' });
     } catch (error) {
-        handleError(res, error);
+        return handleError(res, error);
     }
 });
 

@@ -15,7 +15,6 @@ const isAuthenticated = require("./middleware/authMiddleware");
 const mainRoute = require("./routes/mainpageRoute");
 const registerRoute = require("./routes/registerRoute");
 const signinRoute = require("./routes/signinRoute");
-// const getUserRoute = require("./routes/GetUserRoute");
 const signoutRoute = require("./routes/signoutRoute");
 const socialAuthRoute = require("./routes/socialAuthRoute");
 const forgotPasswordRoute = require("./routes/resetPasswordRoutes/forgetPasswordRoute"); 
