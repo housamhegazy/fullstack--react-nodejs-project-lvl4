@@ -11,6 +11,7 @@ const uploadAvatarToCloudinary = require("../utils/uploadAvatarToCloudinary.js")
 passport.use(
   new GoogleStrategy(
     {
+      // ... (الإعدادات تبقى كما هي)
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackURL: "/auth/google/callback",
@@ -21,29 +22,49 @@ passport.use(
           (await User.findOne({ googleId: profile.id })) ||
           (profile.emails?.length
             ? await User.findOne({ email: profile.emails[0].value })
-            : null);
+            : null); // الحصول على الصورة بأعلى جودة ممكنة (لا تغيير)
 
-        // الحصول على الصورة بأعلى جودة ممكنة
         const rawAvatar = profile.photos?.[0]?.value
           ? profile.photos[0].value.replace(/=s\d+-c$/, "=s800-c")
           : "";
 
-        // رفعها على Cloudinary
-        const avatarUrl = rawAvatar
-          ? await uploadAvatarToCloudinary(rawAvatar, `google_${profile.id}`)
-          : "";
+        let newAvatarUrl = ""; // متغير لتخزين رابط الصورة المرفوعة
 
         if (user) {
           user.googleId = profile.id;
-          if (avatarUrl) user.avatar = avatarUrl;
+          // 💡 1.  إذا كان المستخدم موجودًا، ارفع الصورة باستخدام user._id فقط اذا كان المستخدم لا يملك صوره شخصيه
+          if (rawAvatar && !user.avatar) { 
+            const publicId = user._id.toString();
+            newAvatarUrl = await uploadAvatarToCloudinary(
+              rawAvatar,
+              publicId,
+              user._id.toString()
+            );
+          }
+          if (newAvatarUrl) user.avatar = newAvatarUrl;
         } else {
+          // إنشاء المستخدم أولاً بدون صورة البروفايل المرفوعة
           user = await User.create({
             googleId: profile.id,
             fullName: profile.displayName,
-            email: profile.emails?.[0]?.value || "",
-            avatar: avatarUrl,
+            email: profile.emails?.[0]?.value || "", // وضع رابط الصورة الخام مؤقتاً أو تركه فارغاً
+            avatar: "",// ⬅️ **تصحيح حاسم:** نجعله فارغاً لضمان تحديثه بعد الرفع
             providers: ["google"],
           });
+
+          // 💡 2. بعد إنشاء المستخدم، استخدم user._id لرفع الصورة وتحديث المستند
+          if (rawAvatar) {
+            const publicId = user._id.toString();
+            newAvatarUrl = await uploadAvatarToCloudinary(
+              rawAvatar,
+              publicId,
+              user._id.toString()
+            );
+
+            if (newAvatarUrl) {
+              user.avatar = newAvatarUrl;
+            }
+          }
         }
 
         if (!user.providers.includes("google")) user.providers.push("google");
@@ -72,20 +93,7 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, cb) => {
       try {
-        // ✅ نجيب الصورة الأصلية الكبيرة من Graph API
-      const fetch = (await import("node-fetch")).default;
-const fbPhotoUrl = `https://graph.facebook.com/${profile.id}/picture?type=large&redirect=false&access_token=${accessToken}`;
-const fbResponse = await fetch(fbPhotoUrl);
-const fbData = await fbResponse.json();
-const highResUrl = fbData?.data?.url;
-
-
-        // ✅ نرفع الصورة دي على Cloudinary (بدون streamifier)
-        const uploadedUrl = await uploadAvatarToCloudinary(
-          highResUrl,
-          `fb_${profile.id}`
-        );
-
+        // 1. العثور على المستخدم أو إنشاؤه أولاً
         let user = await User.findOne({ facebookId: profile.id });
 
         if (!user) {
@@ -94,20 +102,50 @@ const highResUrl = fbData?.data?.url;
           }
 
           if (user) {
-            user.facebookId = profile.id;
-            user.avatar = uploadedUrl;
+            // المستخدم موجود بالإيميل
+            user.facebookId = profile.id; // الصورة سيتم تحديثها لاحقاً
           } else {
+            // تسجيل جديد
             user = await User.create({
               facebookId: profile.id,
               fullName: profile.displayName,
               email: profile.emails?.[0]?.value,
-              avatar: uploadedUrl,
-              providers: ["facebook"],
+              providers: ["facebook"], // الصورة سيتم إضافتها لاحقاً بعد الحصول على _id
             });
           }
         }
 
-        if (!user.providers.includes("facebook")) user.providers.push("facebook");
+        // ----------------------------------------------------------------------
+        // 2. معالجة ورفع الصورة بعد التأكد من وجود كائن 'user' و 'user._id'
+        // ----------------------------------------------------------------------
+
+        let uploadedUrl = null;
+
+        // جلب رابط الصورة عالي الدقة
+        const fetch = (await import("node-fetch")).default;
+        const fbPhotoUrl = `https://graph.facebook.com/${profile.id}/picture?type=large&redirect=false&access_token=${accessToken}`;
+        const fbResponse = await fetch(fbPhotoUrl);
+        const fbData = await fbResponse.json();
+        const highResUrl = fbData?.data?.url;
+
+        if (highResUrl && user && !user.avatar) {
+          const publicId = user._id.toString(); // نستخدم معرف المستخدم كـ publicId
+          const userIdString = user._id.toString(); // نستخدم معرف المستخدم كـ userId للمجلد
+
+          // ✅ الرفع الآن مع تمرير publicId و userId
+          uploadedUrl = await uploadAvatarToCloudinary(
+            highResUrl,
+            publicId,
+            userIdString
+          );
+
+          // تحديث رابط الصورة في مستند المستخدم
+          user.avatar = uploadedUrl;
+        }
+
+        // 3. إنهاء وحفظ المستخدم
+        if (!user.providers.includes("facebook"))
+          user.providers.push("facebook");
         user.lastLogin = new Date();
         await user.save();
 
@@ -138,28 +176,48 @@ passport.use(
           (await User.findOne({ xId: profile.id })) ||
           (profile.emails?.length
             ? await User.findOne({ email: profile.emails[0].value })
-            : null);
+            : null); // إزالة _normal للحصول على الصورة الكاملة (لا تغيير)
 
-        // إزالة _normal للحصول على الصورة الكاملة
         const rawAvatar = profile.photos?.[0]?.value
           ? profile.photos[0].value.replace("_normal", "")
           : "";
 
-        const avatarUrl = rawAvatar
-          ? await uploadAvatarToCloudinary(rawAvatar, `twitter_${profile.id}`)
-          : "";
-
+        let newAvatarUrl = ""; // متغير لتخزين رابط الصورة المرفوعة
+            
         if (user) {
-          user.xId = profile.id;
-          if (avatarUrl) user.avatar = avatarUrl;
+          user.xId = profile.id; // 💡 1. المستخدم موجود: نرفع الصورة باستخدام user._id
+
+          if (rawAvatar && !user.avatar) {
+            const publicId = user._id.toString(); // نستخدم الـ ID كمعرّف عام
+            newAvatarUrl = await uploadAvatarToCloudinary(
+              rawAvatar,
+              publicId,
+              user._id.toString() // الـ ID كمعرّف للمجلد
+            );
+          }
+          if (newAvatarUrl) user.avatar = newAvatarUrl;
         } else {
+          // إنشاء المستخدم أولاً للحصول على user._id
           user = await User.create({
             xId: profile.id,
             fullName: profile.displayName,
             email: profile.emails?.[0]?.value || "",
-            avatar: avatarUrl,
+            avatar: "", // قيمة مبدئية
             providers: ["twitter"],
-          });
+          }); // 💡 2. بعد إنشاء المستخدم: نرفع الصورة ونحدث المستند
+
+          if (rawAvatar) {
+            const publicId = user._id.toString();
+            newAvatarUrl = await uploadAvatarToCloudinary(
+              rawAvatar,
+              publicId,
+              user._id.toString()
+            );
+
+            if (newAvatarUrl) {
+              user.avatar = newAvatarUrl;
+            }
+          }
         }
 
         if (!user.providers.includes("twitter")) user.providers.push("twitter");
@@ -174,7 +232,6 @@ passport.use(
     }
   )
 );
-
 passport.serializeUser((user, done) => {
   done(null, user._id);
 });

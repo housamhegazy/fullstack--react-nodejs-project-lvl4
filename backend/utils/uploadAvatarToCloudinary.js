@@ -24,11 +24,11 @@ function bufferToStream(buffer) {
   return readable;
 }
 
-function uploadBufferToCloudinary(buffer, publicId) {
+function uploadBufferToCloudinary(buffer, publicId,userId) {
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
-        folder: "user_profiles",
+        folder: `mernstack/profile-pic/${userId}`,
         public_id: publicId,
         overwrite: true,
       },
@@ -41,10 +41,10 @@ function uploadBufferToCloudinary(buffer, publicId) {
   });
 }
 
-async function uploadAvatarToCloudinary(url, publicId) {
+async function uploadAvatarToCloudinary(url, publicId,userId) {
   try {
     const buffer = await fetchImage(url);
-    const uploadedUrl = await uploadBufferToCloudinary(buffer, publicId);
+    const uploadedUrl = await uploadBufferToCloudinary(buffer, publicId,userId);
     return uploadedUrl;
   } catch (err) {
     console.error("Cloudinary upload failed:", err.message);
