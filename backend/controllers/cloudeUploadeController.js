@@ -1,8 +1,5 @@
 const ImageModel = require("../models/galleryModel");
-const {
-  cloudinary,
-  streamUpload,
-} = require("../config/cloudinaryConfig");
+const { cloudinary, streamUpload } = require("../config/cloudinaryConfig");
 // ********************** تعريف دالة handleError هنا **********************
 const handleError = require("../utils/errorMiddleware");
 
@@ -51,7 +48,58 @@ const uploadImage = // Multer سيضع الملف في req.file.buffer
         .json({ message: "حدث خطأ أثناء رفع الصورة إلى Cloudinary" });
     }
   };
+const uploadmanyImages = async (req, res) => {
+  // ملاحظة: لن تحتاج لمعالج الأخطاء المعقد لـ Multer هنا لأنه سيتم التعامل مع الأخطاء داخلياً
+  if (!req.files || req.files.length === 0) {
+    console.error("No files received in request.");
+    return res.status(400).json({ message: "لم يتم إرسال أي صور." });
+  }
+  const userId = req.body.userId;
+  const uploadedResults = []; // لتخزين نتائج الرفع والحفظ
+  try {
+    // تأكد من وجود userId قبل استخدامها
+    if (!userId) {
+      return res.status(400).json({ message: "معرف المستخدم (userId) مطلوب." });
+    }
 
+    // 3. ✅ التكرار على كل ملف في مصفوفة req.files
+    for (const file of req.files) {
+      const uniquePublicId = `${userId}-${Date.now()}-${Math.random()
+        .toString(16)
+        .slice(2)}`;
+
+      // ============== رفع الصورة إلى Cloudinary =================
+      const result = await streamUpload(file.buffer, {
+        folder: `mernstack/gallery/${userId}`, // مجلد مخصص لكل مستخدم
+        public_id: uniquePublicId,
+        upload_preset: "gallery_preset",
+      });
+
+      // ============== حفظ بيانات الصورة في MongoDB ================
+      const newImage = new ImageModel({
+        owner: userId,
+        imageUrl: result.secure_url,
+        public_id: result.public_id,
+      });
+      await newImage.save();
+
+      // إضافة بيانات الصورة التي تم رفعها إلى مصفوفة النتائج
+      uploadedResults.push({
+        imageUrl: result.secure_url,
+        publicId: result.public_id,
+      });
+    }
+
+    // 4. ✅ إرسال استجابة بنجاح ومصفوفة بجميع الروابط
+    res.status(200).json({
+      message: `✅ تم رفع وحفظ ${uploadedResults.length} صورة بنجاح.`,
+      images: uploadedResults,
+    });
+  } catch (err) {
+    console.error("Batch Upload Error:", err);
+    res.status(500).json({ message: "حدث خطأ أثناء رفع الصور إلى Cloudinary" });
+  }
+};
 const getImages = async (req, res) => {
   try {
     const userImages = await ImageModel.find({ owner: req.params.userId }).sort(
@@ -125,4 +173,10 @@ const deleteAllImages = async (req, res) => {
     return handleError(res, error);
   }
 };
-module.exports = { uploadImage, getImages, deleteImage, deleteAllImages };
+module.exports = {
+  uploadImage,
+  getImages,
+  deleteImage,
+  deleteAllImages,
+  uploadmanyImages,
+};

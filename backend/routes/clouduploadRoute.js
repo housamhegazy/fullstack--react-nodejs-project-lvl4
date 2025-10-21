@@ -8,14 +8,16 @@ const {
   getImages,
   deleteImage,
   deleteAllImages,
+  uploadmanyImages
 } = require("../controllers/cloudeUploadeController");
 //=======================================================================================
-//=====================(1) store image in cloudinary and send data to mongo db ==========
+//=====================store image in cloudinary and send data to mongo db ==========
 //=======================================================================================
 
-//===================================== upload images to cloudinary ===================================
+//===================================== (1) upload image to cloudinary ===================================
 router.post("/api/cloudupload/add", upload.single("image"), uploadImage);
-
+//===================================== (1) upload image to cloudinary ===================================
+router.post("/api/cloudupload/addmany", upload.array("image"), uploadmanyImages);
 //=====================================================================================================
 //================================ (2) get images from mongoo db ======================================
 //=====================================================================================================

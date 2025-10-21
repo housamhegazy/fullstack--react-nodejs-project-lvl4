@@ -28,6 +28,7 @@ const CloudinarUploud = () => {
     isError,
   } = useGetUserProfileQuery(); // Fetch current user
   const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedManyFiles, setSelectedManyFiles] = useState(null);
   const [preview, setPreview] = useState(null);
   const [allImgs, setAllImgs] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -35,6 +36,7 @@ const CloudinarUploud = () => {
   const [deletingId, setDeletingId] = useState(null); // loading for delete image icon btn
   const [deletingAll, setDeletingAll] = useState(false); //loading for delet all btn
   const [imagesLoading, setImagesLoading] = useState(true); // loading during fetch images
+  const [imagesError, setImagesError] = useState("");
 
   //======================================= FETCHING PAGE DATA =================================================
 
@@ -90,6 +92,17 @@ const CloudinarUploud = () => {
       reader.readAsDataURL(file);
     }
   };
+  //===================================== ADD MANY PHOTOS TO STATE ================================================
+  const handlemMnyFilesChange = (e) => {
+    const files = e.target.files;
+    setSelectedManyFiles(files);
+    if (files && files.length > 0) {
+      setImagesError("");
+    } else {
+      setSelectedManyFiles(null);
+    }
+  };
+
   //=================================== SEND DATA TO BACKEND =====================================
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -146,7 +159,67 @@ const CloudinarUploud = () => {
       }
     }
   };
+  //===============================handle submit many images ========================
+  const handlesubmitImages = async (e) => {
+    e.preventDefault();
+    if (!selectedManyFiles || selectedManyFiles.length === 0) {
+      // ... عرض خطأ للمستخدم
+      setImagesError("please choose photos first ..");
+      return;
+    }
+    const formData = new FormData();
 
+    // 💡 التكرار على جميع الملفات وإضافتها إلى FormData
+    // بنفس اسم الحقل الذي حددته في Multer ("image")
+    for (let i = 0; i < selectedManyFiles.length; i++) {
+      formData.append("image", selectedManyFiles[i]);
+    }
+    formData.append("userId", user._id);
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, Add it!",
+    });
+    if (result.isConfirmed) {
+      try {
+        const response = await fetch(
+          `http://localhost:3000/api/cloudupload/addmany`,
+          {
+            body: formData,
+            method: "POST",
+            credentials: "include",
+          }
+        );
+        // ✅ التصحيح الثاني: معالجة الاستجابة والتحقق من الحالة
+        if (!response.ok) {
+          // قراءة الخطأ الذي أرسله الخادم
+          const errorData = await response.json();
+          throw new Error(
+            errorData.message || `Request failed with status ${response.status}`
+          );
+        }
+        getImages();
+        // ✅ التصحيح الثالث: قراءة البيانات المرجعة (عادة تكون JSON)
+        const uploadedImages = await response.json();
+        console.log("Upload successful:", uploadedImages);
+        Swal.fire({
+          title: "added!",
+          text: "Your images has added successfully.",
+          icon: "success",
+        });
+        // 💡 يمكنك هنا تحديث واجهة المستخدم بالصور المرفوعة
+      } catch (error) {
+        console.error("Error during image upload:", error); // تغيير console.log إلى console.error
+        // ... يمكنك هنا عرض الخطأ (error.message) للمستخدم في الواجهة
+      } finally {
+        setSelectedManyFiles(null);
+      }
+    }
+  };
   //============================ Delete image =====================================
   const handleDelete = async (publicId, owner) => {
     const result = await Swal.fire({
@@ -272,79 +345,172 @@ const CloudinarUploud = () => {
         />
         Cloudinary Upload
       </Typography>
+
       {/* Upload Section */}
-      <Grid sx={{ textAlign: "center", mb: 2 }}>
-        <input
-          accept="image/*"
-          style={{ display: "none" }}
-          id="avatar-upload"
-          type="file"
-          onChange={handleFileChange}
-        />
-        <label htmlFor="avatar-upload">
-          <Button
-            variant="outlined"
-            component="span"
-            sx={{
-              borderColor: "#1976d2",
-              color: "#1976d2",
-              "&:hover": {
-                borderColor: "#1565c0",
-                backgroundColor: "rgba(25, 118, 210, 0.1)",
-              },
-            }}
-          >
-            choose Profile Picture
-          </Button>
-        </label>
-        {error && <Typography color="error">{error}</Typography>}
-        {preview && (
-          <Box sx={{ mt: 2, textAlign: "center" }}>
-            {loading ? (
-              <Skeleton
-                variant="circular" // شكل دائري ليناسب Avatar
-                sx={{
-                  width: 100,
-                  height: 100,
-                  mx: "auto", // توسيط
-                }}
-              />
-            ) : (
-              <Avatar
-                src={preview}
-                sx={{ width: 100, height: 100, mx: "auto" }}
-              />
-            )}
-          </Box>
-        )}
-      </Grid>
-      <Button
-        onClick={(e) => {
-          handleSubmit(e);
-        }}
-        variant="outlined"
-        type="submit"
+      <Box
         sx={{
-          m: "0 auto",
           display: "flex",
-          mb: 5,
-          borderColor: "#1976d2",
-          color: "#1976d2",
-          "&:hover": {
-            borderColor: "#1565c0",
-            backgroundColor: "rgba(25, 118, 210, 0.1)",
-          },
+          justifyContent: "center",
+          alignItems: "center",
+          flexWrap:"wrap",
+          gap: 4,
+          p: 3,
         }}
       >
-        {loading ? (
-          <CircularProgress size={20} />
-        ) : (
-          <>
-            upload <Upload />
-          </>
-        )}{" "}
-        {/* ✅ مهم جداً */}
-      </Button>
+        {/* Upload one image */}
+        <Box
+          sx={{
+            width: 300, // تحديد عرض ثابت
+            p: 3,
+            borderRadius: 2, // حواف دائرية
+            border: "2px solid", // حافة خفيفة
+            borderColor:"secondary.main",
+            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)", // ظل خفيف لتمييز الصندوق
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            textAlign: "center",
+          }}
+        >
+        <Typography variant="h6" gutterBottom color="secondary">
+            Only one photo
+        </Typography>
+          <Grid sx={{ textAlign: "center", mb: 2 }}>
+            <input
+              accept="image/*"
+              style={{ display: "none" }}
+              id="avatar-upload"
+              type="file"
+              onChange={handleFileChange}
+            />
+            <label htmlFor="avatar-upload">
+              <Button
+                variant="outlined"
+                component="span"
+                sx={{
+                  borderColor: "#1976d2",
+                  color: "#1976d2",
+                  "&:hover": {
+                    borderColor: "#1565c0",
+                    backgroundColor: "rgba(25, 118, 210, 0.1)",
+                  },
+                }}
+              >
+                upload image
+              </Button>
+            </label>
+            {error && <Typography color="error">{error}</Typography>}
+            {preview && (
+              <Box sx={{ mt: 2, textAlign: "center" }}>
+                {loading ? (
+                  <Skeleton
+                    variant="circular" // شكل دائري ليناسب Avatar
+                    sx={{
+                      width: 100,
+                      height: 100,
+                      mx: "auto", // توسيط
+                    }}
+                  />
+                ) : (
+                  <Avatar
+                    src={preview}
+                    sx={{ width: 100, height: 100, mx: "auto" }}
+                  />
+                )}
+              </Box>
+            )}
+          </Grid>
+
+          <Button
+            onClick={(e) => {
+              handleSubmit(e);
+            }}
+            variant="contained"
+            type="submit"
+            color="secondary"
+            sx={{ mt: 2, width: '80%' }}
+          >
+            {loading ? (
+              <CircularProgress size={20} />
+            ) : (
+              <>
+                upload <Upload />
+              </>
+            )}{" "}
+            {/* ✅ مهم جداً */}
+          </Button>
+        </Box>
+        {/* upload many images  */}
+        <Box
+          sx={{
+            width: 300, // تحديد عرض ثابت
+            p: 3,
+            borderRadius: 2,
+            border: "2px solid #4caf50", // حافة بلون مختلف
+            boxShadow: "0 4px 12px rgba(76, 175, 80, 0.2)", // ظل بلون مختلف
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            textAlign: "center",
+          }}
+        >
+        <Typography variant="h6" gutterBottom color="success.main">
+            upload Images(Gallery)
+        </Typography>
+          <Grid sx={{ textAlign: "center", mb: 2 }}>
+            <input
+              accept="image/*"
+              style={{ display: "none" }}
+              id="images-upload"
+              type="file"
+              multiple
+              onChange={handlemMnyFilesChange}
+            />
+            <label htmlFor="images-upload">
+              <Button
+                variant="outlined"
+                component="span"
+                sx={{
+                  borderColor: "#1976d2",
+                  color: "#1976d2",
+                  "&:hover": {
+                    borderColor: "#1565c0",
+                    backgroundColor: "rgba(25, 118, 210, 0.1)",
+                  },
+                }}
+              >
+                upload many image
+              </Button>
+            </label>
+            {imagesError && (
+              <Typography color="error">{imagesError}</Typography>
+            )}
+            {selectedManyFiles && selectedManyFiles.length > 0 && (
+              <Typography sx={{ mt: 3 }} color="text.default">
+                you selected {selectedManyFiles.length} photos
+              </Typography>
+            )}
+          </Grid>
+          <Button
+            onClick={(e) => {
+              handlesubmitImages(e);
+            }}
+            type="submit"
+            variant="contained" // تم تغيير الـ variant لتمييز زر الرفع عن زر الاختيار
+            color="success" // استخدام لون مختلف
+            sx={{ mt: 2, width: '80%' }}
+          >
+            {loading ? (
+              <CircularProgress size={20} />
+            ) : (
+              <>
+                upload many <Upload />
+              </>
+            )}{" "}
+            {/* ✅ مهم جداً */}
+          </Button>
+        </Box>
+      </Box>
       <Divider sx={{ mb: 5 }} component={"h3"}>
         <Chip sx={{ fontSize: "25px" }} label="All Photos" size="medium" />
       </Divider>
