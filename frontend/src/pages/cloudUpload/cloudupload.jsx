@@ -352,7 +352,7 @@ const CloudinarUploud = () => {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          flexWrap:"wrap",
+          flexWrap: "wrap",
           gap: 4,
           p: 3,
         }}
@@ -364,7 +364,7 @@ const CloudinarUploud = () => {
             p: 3,
             borderRadius: 2, // حواف دائرية
             border: "2px solid", // حافة خفيفة
-            borderColor:"secondary.main",
+            borderColor: "secondary.main",
             boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)", // ظل خفيف لتمييز الصندوق
             display: "flex",
             flexDirection: "column",
@@ -372,9 +372,9 @@ const CloudinarUploud = () => {
             textAlign: "center",
           }}
         >
-        <Typography variant="h6" gutterBottom color="secondary">
+          <Typography variant="h6" gutterBottom color="secondary">
             Only one photo
-        </Typography>
+          </Typography>
           <Grid sx={{ textAlign: "center", mb: 2 }}>
             <input
               accept="image/*"
@@ -428,7 +428,7 @@ const CloudinarUploud = () => {
             variant="contained"
             type="submit"
             color="secondary"
-            sx={{ mt: 2, width: '80%' }}
+            sx={{ mt: 2, width: "80%" }}
           >
             {loading ? (
               <CircularProgress size={20} />
@@ -454,9 +454,9 @@ const CloudinarUploud = () => {
             textAlign: "center",
           }}
         >
-        <Typography variant="h6" gutterBottom color="success.main">
+          <Typography variant="h6" gutterBottom color="success.main">
             upload Images(Gallery)
-        </Typography>
+          </Typography>
           <Grid sx={{ textAlign: "center", mb: 2 }}>
             <input
               accept="image/*"
@@ -498,7 +498,7 @@ const CloudinarUploud = () => {
             type="submit"
             variant="contained" // تم تغيير الـ variant لتمييز زر الرفع عن زر الاختيار
             color="success" // استخدام لون مختلف
-            sx={{ mt: 2, width: '80%' }}
+            sx={{ mt: 2, width: "80%" }}
           >
             {loading ? (
               <CircularProgress size={20} />
@@ -511,8 +511,28 @@ const CloudinarUploud = () => {
           </Button>
         </Box>
       </Box>
-      <Divider sx={{ mb: 5 }} component={"h3"}>
-        <Chip sx={{ fontSize: "25px" }} label="All Photos" size="medium" />
+      <Divider
+        sx={{ my: 4 }}
+        // استخدام component="h2" أو "h3" مفيد لتحسين محركات البحث (SEO)
+        component="h2"
+      >
+        <Typography
+          variant="h4"
+          // component="span" لضمان عدم كسر الخط الفاصل
+          component="span"
+          sx={{
+            color: "text.secondary",
+            fontWeight: 500, 
+            px: 3, 
+            fontSize: {
+              xs: "1.5rem",
+              sm: "2rem", 
+            },
+            backgroundColor: "background.paper",
+          }}
+        >
+          All Photos
+        </Typography>
       </Divider>
       {/* القسم الخاص بزر حذف الجميع */}
 
