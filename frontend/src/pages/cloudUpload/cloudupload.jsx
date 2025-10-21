@@ -31,12 +31,13 @@ const CloudinarUploud = () => {
   const [selectedManyFiles, setSelectedManyFiles] = useState(null);
   const [preview, setPreview] = useState(null);
   const [allImgs, setAllImgs] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false); // loading during upload one photo
+  const [multiloading, setMultiLoading] = useState(false); // loading during upload mani photo
+  const [error, setError] = useState(""); //error for upload one photo
+  const [imagesError, setImagesError] = useState(""); //error for upload many photos
   const [deletingId, setDeletingId] = useState(null); // loading for delete image icon btn
   const [deletingAll, setDeletingAll] = useState(false); //loading for delet all btn
   const [imagesLoading, setImagesLoading] = useState(true); // loading during fetch images
-  const [imagesError, setImagesError] = useState("");
 
   //======================================= FETCHING PAGE DATA =================================================
 
@@ -185,6 +186,7 @@ const CloudinarUploud = () => {
       confirmButtonText: "Yes, Add it!",
     });
     if (result.isConfirmed) {
+      setMultiLoading(true);
       try {
         const response = await fetch(
           `http://localhost:3000/api/cloudupload/addmany`,
@@ -217,6 +219,7 @@ const CloudinarUploud = () => {
         // ... يمكنك هنا عرض الخطأ (error.message) للمستخدم في الواجهة
       } finally {
         setSelectedManyFiles(null);
+        setMultiLoading(false);
       }
     }
   };
@@ -382,6 +385,7 @@ const CloudinarUploud = () => {
               id="avatar-upload"
               type="file"
               onChange={handleFileChange}
+              disabled={loading}
             />
             <label htmlFor="avatar-upload">
               <Button
@@ -395,6 +399,7 @@ const CloudinarUploud = () => {
                     backgroundColor: "rgba(25, 118, 210, 0.1)",
                   },
                 }}
+                disabled={loading}
               >
                 upload image
               </Button>
@@ -437,7 +442,6 @@ const CloudinarUploud = () => {
                 upload <Upload />
               </>
             )}{" "}
-            {/* ✅ مهم جداً */}
           </Button>
         </Box>
         {/* upload many images  */}
@@ -465,6 +469,7 @@ const CloudinarUploud = () => {
               type="file"
               multiple
               onChange={handlemMnyFilesChange}
+              disabled={multiloading}
             />
             <label htmlFor="images-upload">
               <Button
@@ -478,6 +483,7 @@ const CloudinarUploud = () => {
                     backgroundColor: "rgba(25, 118, 210, 0.1)",
                   },
                 }}
+                disabled={multiloading}
               >
                 upload many image
               </Button>
@@ -486,8 +492,11 @@ const CloudinarUploud = () => {
               <Typography color="error">{imagesError}</Typography>
             )}
             {selectedManyFiles && selectedManyFiles.length > 0 && (
-              <Typography sx={{ mt: 3 }} color="text.default">
-                you selected {selectedManyFiles.length} photos
+              <Typography sx={{ mt: 1 }} color="text.default">
+                {selectedManyFiles.length > 1
+                  ? "(" + selectedManyFiles.length + ")" + "photos"
+                  : "( " + selectedManyFiles.length + " ) " + "photo"}{" "}
+                selected
               </Typography>
             )}
           </Grid>
@@ -500,7 +509,7 @@ const CloudinarUploud = () => {
             color="success" // استخدام لون مختلف
             sx={{ mt: 2, width: "80%" }}
           >
-            {loading ? (
+            {multiloading ? (
               <CircularProgress size={20} />
             ) : (
               <>
@@ -522,11 +531,11 @@ const CloudinarUploud = () => {
           component="span"
           sx={{
             color: "text.secondary",
-            fontWeight: 500, 
-            px: 3, 
+            fontWeight: 500,
+            px: 3,
             fontSize: {
               xs: "1.5rem",
-              sm: "2rem", 
+              sm: "2rem",
             },
             backgroundColor: "background.paper",
           }}
