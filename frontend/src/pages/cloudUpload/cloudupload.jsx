@@ -14,6 +14,7 @@ import {
   Skeleton,
   IconButton,
   CircularProgress,
+  Pagination,
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -38,14 +39,20 @@ const CloudinarUploud = () => {
   const [deletingId, setDeletingId] = useState(null); // loading for delete image icon btn
   const [deletingAll, setDeletingAll] = useState(false); //loading for delet all btn
   const [imagesLoading, setImagesLoading] = useState(true); // loading during fetch images
+  // pagination states used in getimages func
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const IMAGES_PER_PAGE = 9; // يمكنك تغيير هذا الرقم
 
   //======================================= FETCHING PAGE DATA =================================================
 
-  const getImages = async () => {
+  const getImages = async (pageNumber = currentPage) => {
     setImagesLoading(true);
     try {
       const result = await fetch(
-        `http://localhost:3000/api/allimages/${user && user._id}`,
+        `http://localhost:3000/api/allimages/${
+          user && user._id
+        }?page=${pageNumber}&limit=${IMAGES_PER_PAGE}`,
         {
           method: "GET",
           credentials: "include",
@@ -54,10 +61,14 @@ const CloudinarUploud = () => {
       const alldata = await result.json();
       if (alldata.images && Array.isArray(alldata.images)) {
         setAllImgs(alldata.images);
+        // ✅ تحديث الـ State بناءً على الرد من الباك إند
+        setTotalPages(alldata.totalPages);
+        setCurrentPage(alldata.currentPage); // قد يكون مهمًا إذا كانت هناك عمليات تحويل
         console.log(alldata.message);
       } else {
         // تعامل مع الحالة التي يكون فيها الرد غير متوقع
         setAllImgs([]);
+        setTotalPages(1);
       }
     } catch (err) {
       console.error(err);
@@ -66,7 +77,13 @@ const CloudinarUploud = () => {
       setImagesLoading(false);
     }
   };
-
+  // ====================== handle pagination ============================================
+  const handlePageChange = (event, value) => {
+    setCurrentPage(value);
+    getImages(value); // استدعاء جلب الصور للصفحة الجديدة
+    window.scrollTo({ top: 0, behavior: "smooth" }); // لرفع المستخدم لأعلى الصفحة
+  };
+  //========================= useEffect ======================================================
   useEffect(() => {
     if (!user && !userLoading) {
       navigate("/signin", { replace: true });
@@ -77,7 +94,8 @@ const CloudinarUploud = () => {
       return;
     }
     if (user) {
-      getImages();
+      //import page 1
+      getImages(1);
     }
   }, [navigate, user, userLoading]);
   //===================================== ADD PHOTO TO STATE ================================================
@@ -138,7 +156,7 @@ const CloudinarUploud = () => {
         const data = await res.json(); // image link in cloudinary
         if (!res.ok)
           throw new Error(data.message + "حدث خطأ" || "حدث خطأ أثناء الرفع");
-        getImages();
+        getImages(1);
         Swal.fire({
           title: "added!",
           text: "Your image has added successfully.",
@@ -204,7 +222,7 @@ const CloudinarUploud = () => {
             errorData.message || `Request failed with status ${response.status}`
           );
         }
-        getImages();
+        getImages(1);
         // ✅ التصحيح الثالث: قراءة البيانات المرجعة (عادة تكون JSON)
         const uploadedImages = await response.json();
         console.log("Upload successful:", uploadedImages);
@@ -220,6 +238,12 @@ const CloudinarUploud = () => {
       } finally {
         setSelectedManyFiles(null);
         setMultiLoading(false);
+        // 💡 الخطوة الحاسمة: تفريغ قيمة حقل الإدخال في DOM
+        const fileInput = document.getElementById("images-upload");
+        if (fileInput) {
+          // @ts-ignore
+          fileInput.value = ""; // ⬅️ هذا هو ما يفرغ الملف القديم من الذاكرة
+        }
       }
     }
   };
@@ -250,7 +274,7 @@ const CloudinarUploud = () => {
         );
         if (response.ok) {
           // ✅ استدعاء دالة جلب الصور لتحديث الـ state
-          await getImages();
+          await getImages(1);
           Swal.fire("Deleted!", "تم حذف الصورة بنجاح.", "success");
         } else {
           const errorData = await response.json();
@@ -288,7 +312,7 @@ const CloudinarUploud = () => {
         );
         if (response.ok) {
           // ✅ استدعاء دالة جلب الصور لتحديث الـ state
-          await getImages();
+          await getImages(1);
           Swal.fire("Deleted!", "تم حذف الصور بنجاح.", "success");
         } else {
           const errorData = await response.json();
@@ -315,12 +339,7 @@ const CloudinarUploud = () => {
 
   // 💡 دالة لإنشاء هيكل (Skeleton) مؤقت للمعرض أثناء التحميل
   const LoadingSkeleton = () => (
-    <ImageList
-      cols={getCols()}
-      rowHeight={200}
-      gap={7}
-      sx={{ width: "100%", height: 600 }}
-    >
+    <ImageList cols={getCols()} rowHeight={200} gap={7} sx={{ width: "100%" }}>
       {/* إنشاء عدد من 6 إلى 9 مربعات وهمية */}
       {[...Array(getCols() * 3)].map((_, index) => (
         <ImageListItem key={index}>
@@ -428,12 +447,14 @@ const CloudinarUploud = () => {
 
           <Button
             onClick={(e) => {
-              handleSubmit(e);
+              e.preventDefault();
+              !loading && handleSubmit(e);
             }}
             variant="contained"
             type="submit"
             color="secondary"
             sx={{ mt: 2, width: "80%" }}
+            // disabled={loading}
           >
             {loading ? (
               <CircularProgress size={20} />
@@ -502,7 +523,8 @@ const CloudinarUploud = () => {
           </Grid>
           <Button
             onClick={(e) => {
-              handlesubmitImages(e);
+              e.preventDefault();
+              !multiloading && handlesubmitImages(e);
             }}
             type="submit"
             variant="contained" // تم تغيير الـ variant لتمييز زر الرفع عن زر الاختيار
@@ -556,7 +578,7 @@ const CloudinarUploud = () => {
                 onClick={handleDeleteAll}
                 variant="contained"
                 color="error" // 💡 استخدام لون الخطأ (الأحمر) ليتناسب مع الحذف
-                disabled={deletingAll} // 🚫 تعطيل أثناء التحميل
+                disabled={deletingAll} //  تعطيل أثناء التحميل
                 startIcon={
                   deletingAll ? (
                     <CircularProgress size={20} color="inherit" />
@@ -570,7 +592,7 @@ const CloudinarUploud = () => {
                   py: 1,
                 }}
               >
-                {deletingAll ? "Deleting All..." : "Delete All Photos"} 
+                {deletingAll ? "Deleting All..." : "Delete All Photos"}
               </Button>
             </Box>
           )}
@@ -580,7 +602,7 @@ const CloudinarUploud = () => {
             </Typography>
           )}
           <ImageList
-            sx={{ width: "100%", height: 600 }}
+            sx={{ width: "100%" }}
             cols={getCols()} // هذا هو الاستخدام الصحيح
             rowHeight={200}
             gap={7}
@@ -636,6 +658,18 @@ const CloudinarUploud = () => {
               })}
           </ImageList>
         </>
+      )}
+      {/* 5. ✅ إضافة مكون Pagination هنا */}
+      {totalPages > 1 && (
+        <Box sx={{ display: "flex", justifyContent: "center", my: 4 }}>
+          <Pagination
+            count={totalPages}
+            page={currentPage}
+            onChange={handlePageChange}
+            color="primary"
+            size={isSmall ? "medium" : "large"} // متجاوب
+          />
+        </Box>
       )}
     </Box>
   );

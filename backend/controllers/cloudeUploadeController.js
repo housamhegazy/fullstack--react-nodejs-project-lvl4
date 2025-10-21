@@ -2,26 +2,33 @@ const ImageModel = require("../models/galleryModel");
 const { cloudinary, streamUpload } = require("../config/cloudinaryConfig");
 // ********************** تعريف دالة handleError هنا **********************
 const handleError = require("../utils/errorMiddleware");
+// to compresse photos before upload
+const sharp = require("sharp");
 
-const uploadImage = // Multer سيضع الملف في req.file.buffer
+const uploadImage = 
   async (req, res) => {
-    // ملاحظة: لن تحتاج لمعالج الأخطاء المعقد لـ Multer هنا لأنه سيتم التعامل مع الأخطاء داخلياً
     if (!req.file) {
       console.error("File missing in request.");
       return res.status(400).json({ message: "لم يتم إرسال ملف الصورة." });
     }
     try {
-      const userId = req.body.userId; // رفعها لـ Cloudinary باستخدام Stream
-
-      // تأكد من وجود userId قبل استخدامها
+      const userId = req.body.userId; 
       if (!userId) {
         return res
           .status(400)
           .json({ message: "معرف المستخدم (userId) مطلوب." });
       }
-      //============================= store image in cloudinary =================================
+      
+      //================== compresse photos==============================================
+      const processedBuffer = await sharp(req.file.buffer) // أو file.buffer
+        .resize(800) // 1. تغيير العرض إلى 800 بكسل (الطول يتغير تلقائياً)
+        .webp({ quality: 80 }) // 2. تحويل التنسيق إلى WebP وضغط الجودة إلى 80%
+        .toBuffer(); // 3. إرجاع النتيجة كـ Buffer جديد
+
+
+        //=================== upload to cloudinary ========================================
       const uniquePublicId = `${userId}-${Date.now()}`;
-      const result = await streamUpload(req.file.buffer, {
+      const result = await streamUpload(processedBuffer, {
         folder: `mernstack/gallery/${userId}`, // sort folders in cloudinary based on userId
         // public_id: userId, //  هذا هو اسم الصوره ويضمن عند رفع صوره يقوم بحذف القديمه ومن الممكن تغييره الى دالة الوقت لرفع كل صوره باسم مختلف والاحتفاظ بكل الصور
         public_id: uniquePublicId,
@@ -48,28 +55,33 @@ const uploadImage = // Multer سيضع الملف في req.file.buffer
         .json({ message: "حدث خطأ أثناء رفع الصورة إلى Cloudinary" });
     }
   };
+
 const uploadmanyImages = async (req, res) => {
-  // ملاحظة: لن تحتاج لمعالج الأخطاء المعقد لـ Multer هنا لأنه سيتم التعامل مع الأخطاء داخلياً
   if (!req.files || req.files.length === 0) {
     console.error("No files received in request.");
     return res.status(400).json({ message: "لم يتم إرسال أي صور." });
   }
+
   const userId = req.body.userId;
-  const uploadedResults = []; // لتخزين نتائج الرفع والحفظ
+  const uploadedResults = []; 
   try {
-    // تأكد من وجود userId قبل استخدامها
+
     if (!userId) {
       return res.status(400).json({ message: "معرف المستخدم (userId) مطلوب." });
     }
 
-    // 3. ✅ التكرار على كل ملف في مصفوفة req.files
+    //============= make uniqu Id to every photo ===============================
     for (const file of req.files) {
       const uniquePublicId = `${userId}-${Date.now()}-${Math.random()
         .toString(16)
         .slice(2)}`;
-
-      // ============== رفع الصورة إلى Cloudinary =================
-      const result = await streamUpload(file.buffer, {
+    //================ compress all photos ======================================
+        const processedBuffer = await sharp(file.buffer) 
+        .resize(800) // 
+        .webp({ quality: 80 }) 
+        .toBuffer(); 
+      // ============== رفع الصورة إلى Cloudinary ==================================
+      const result = await streamUpload(processedBuffer, {
         folder: `mernstack/gallery/${userId}`, // مجلد مخصص لكل مستخدم
         public_id: uniquePublicId,
         upload_preset: "gallery_preset",
@@ -101,12 +113,20 @@ const uploadmanyImages = async (req, res) => {
   }
 };
 const getImages = async (req, res) => {
+  // 1. ✅ استلام معلمات الترقيم من الـ Query
+  const page = parseInt(req.query.page) || 1; // رقم الصفحة الافتراضي هو 1
+  const limit = parseInt(req.query.limit) || 9; // عدد العناصر في الصفحة، الافتراضي 9
+  const userId = req.params.userId;
+  const skip = (page - 1) * limit; // حساب عدد العناصر التي سيتم تخطيها
   try {
-    const userImages = await ImageModel.find({ owner: req.params.userId }).sort(
-      { createdAt: -1 }
-    ); // Fetch all images
+    // 2. ✅ حساب إجمالي عدد العناصر
+    const totalImages = await ImageModel.countDocuments({ owner: userId });
+    const userImages = await ImageModel.find({ owner: req.params.userId })
+      .sort({ createdAt: -1 }) // Fetch all images
+      .skip(skip) // تخطي عدد معين من العناصر
+      .limit(limit); // تحديد عدد العناصر المراد جلبها
 
-    if (userImages.length === 0) {
+    if (userImages.length === 0 && page === 1) {
       return res
         .status(404)
         .json({ message: "لم يتم العثور على صور لهذا المستخدم." });
@@ -114,6 +134,9 @@ const getImages = async (req, res) => {
     res.status(200).json({
       message: "✅ تم استرجاع الصور بنجاح من Cloudinary (مباشر)",
       images: userImages,
+      currentPage: page,
+      totalPages: Math.ceil(totalImages / limit), // حساب إجمالي عدد الصفحات
+      totalImages: totalImages,
     }); // 200 OK
   } catch (error) {
     return handleError(res, error);
