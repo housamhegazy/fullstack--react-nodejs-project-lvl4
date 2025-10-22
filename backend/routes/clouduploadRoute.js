@@ -9,7 +9,8 @@ const {
   deleteImage,
   deleteAllImages,
   uploadmanyImages,
-  downloadImage
+  downloadImage,
+  downloadAll
 } = require("../controllers/cloudeUploadeController");
 //=======================================================================================
 //=====================store image in cloudinary and send data to mongo db ==========
@@ -38,7 +39,10 @@ router.delete("/api/allImages/deleteall/:owner", deleteAllImages);
 //=====================================================================================================
 
 router.get("/api/download/:publicId",downloadImage)
-
+//=====================================================================================================
+//================================ (4) download images from mongoo db and cloudinary store ===========
+//=====================================================================================================
+router.get("/api/downloadAll/:userId", downloadAll);
 
 
 

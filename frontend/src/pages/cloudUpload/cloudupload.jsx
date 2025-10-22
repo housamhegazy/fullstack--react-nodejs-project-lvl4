@@ -5,6 +5,7 @@ import {
   CloudDownload,
   KeyboardArrowDown,
   Download,
+  Close,
 } from "@mui/icons-material";
 import {
   useMediaQuery,
@@ -24,6 +25,8 @@ import {
   Pagination,
   MenuItem,
   Menu,
+  DialogContent,
+  Dialog,
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -48,6 +51,8 @@ const CloudinarUploud = () => {
   const [deletingId, setDeletingId] = useState(null); // loading for delete image icon btn
   const [deletingAll, setDeletingAll] = useState(false); //loading for delet all btn
   const [imagesLoading, setImagesLoading] = useState(true); // loading during fetch images
+  const [openDialog, setOpenDialog] = useState(false); // open and close Dialog
+  const [selectedImage, setSelectedImage] = useState(null); // store dialoge image in state
   // pagination states used in getimages func
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -71,7 +76,23 @@ const CloudinarUploud = () => {
     handleDeleteAll(); // استدعاء دالة الحذف الحالية
     handleClose();
   };
+  //function to download all and close menu
+  const handleDownloadAllAndClose = () => {
+    handlwDownloadAll();
+    handleClose();
+  };
 
+  // function to open dialog
+  const handleOpenImageDialog = (image) => {
+    setSelectedImage(image); // حفظ بيانات الصورة المختارة
+    setOpenDialog(true); // فتح الـ Dialog
+  };
+
+  // function to close dialog
+  const handleCloseImageDialog = () => {
+    setOpenDialog(false); // إغلاق الـ Dialog
+    setSelectedImage(null); // مسح الصورة المختارة
+  };
   //======================================= FETCHING PAGE DATA =================================================
 
   const getImages = async (pageNumber = currentPage) => {
@@ -358,16 +379,28 @@ const CloudinarUploud = () => {
   //=====================================download image =================================
   const handledownload = (img) => {
     const publicId = img.public_id;
-    console.log(publicId);
     try {
       const encodedPublicId = encodeURIComponent(publicId);
+      const backendDownloadRoute = `http://localhost:3000/api/download/${encodedPublicId}`;
+      window.open(backendDownloadRoute, "_blank");
 
-        const backendDownloadRoute = `http://localhost:3000/api/download/${encodedPublicId}`;
-        window.open(backendDownloadRoute, '_blank'); 
+      Swal.fire("Ready!", "The image download will start shortly.", "info");
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  //============================= download all images ==========================
+  const handlwDownloadAll = () => {
+    const encodedUserId = encodeURIComponent(user && user._id);
+    try {
+      const backendDownloadRoute = `http://localhost:3000/api/downloadAll/${encodedUserId}`;
+      window.open(backendDownloadRoute, "_blank");
 
-        Swal.fire("Ready!", "سيتم بدء تحميل الصورة قريباً.", "info");
-
-
+      Swal.fire(
+        "gallery download",
+        "The ZIP file will be created and the download will start shortly. 💾",
+        "info"
+      );
     } catch (error) {
       console.log(error);
     }
@@ -663,7 +696,7 @@ const CloudinarUploud = () => {
                 </MenuItem>
 
                 {/* يمكنك إضافة خيارات أخرى هنا: */}
-                <MenuItem onClick={handleClose}>
+                <MenuItem onClick={handleDownloadAllAndClose}>
                   <CloudDownload sx={{ mr: 1 }} /> Download All
                 </MenuItem>
               </Menu>
@@ -689,7 +722,10 @@ const CloudinarUploud = () => {
                 const isDeleting = deletingId === img.public_id;
                 return (
                   <Box key={img.public_id}>
-                    <ImageListItem>
+                    <ImageListItem
+                      sx={{ cursor: "pointer" }}
+                      onClick={() => handleOpenImageDialog(img)}
+                    >
                       <img
                         srcSet={`${img.imageUrl}?w=164&h=164&fit=crop&auto=format&dpr=2 2x`}
                         src={img.imageUrl}
@@ -716,7 +752,8 @@ const CloudinarUploud = () => {
                         <CircularProgress size={24} color="error" />
                       ) : (
                         <IconButton
-                          onClick={async () => {
+                          onClick={async (e) => {
+                            e.stopPropagation(); // ⚠️ منع حدث النقر على الصورة من العمل
                             const publicId = await img.public_id;
                             const owner = img.owner;
                             handleDelete(publicId, owner);
@@ -732,7 +769,8 @@ const CloudinarUploud = () => {
                       {/* download photo func  */}
 
                       <IconButton
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation(); // ⚠️ منع حدث النقر على الصورة من العمل
                           handledownload(img);
                         }}
                       >
@@ -743,6 +781,40 @@ const CloudinarUploud = () => {
                 );
               })}
           </ImageList>
+
+          {/****************************** start dialog ********************************** */}
+          {selectedImage && ( // تأكد من وجود صورة مختارة
+            <Dialog
+              open={openDialog}
+              onClose={handleCloseImageDialog}
+              maxWidth="md" // يمكنك استخدام "lg" أو "xl" حسب حجم الشاشات
+              fullWidth
+            >
+              <DialogContent sx={{ p: 0, position: "relative" }}>
+                {/* زر الإغلاق */}
+                <IconButton
+                  aria-label="close"
+                  onClick={handleCloseImageDialog}
+                  sx={{
+                    position: "absolute",
+                    right: 8,
+                    top: 8,
+                    color: (theme) => theme.palette.grey[500],
+                    zIndex: 10, // للتأكد من ظهوره فوق الصورة
+                  }}
+                >
+                  <Close />
+                </IconButton>
+
+                {/* الصورة بالحجم الكامل */}
+                <img
+                  src={selectedImage.imageUrl}
+                  alt={selectedImage.public_id}
+                  style={{ width: "100%", height: "auto", display: "block" }}
+                />
+              </DialogContent>
+            </Dialog>
+          )}
         </>
       )}
       {/* 5. ✅ إضافة مكون Pagination هنا */}

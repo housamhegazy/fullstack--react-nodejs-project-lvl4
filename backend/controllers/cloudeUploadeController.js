@@ -1,6 +1,7 @@
 const ImageModel = require("../models/galleryModel");
 const { cloudinary, streamUpload } = require("../config/cloudinaryConfig");
-const axios = require('axios'); // استيراد axios
+const archiver = require("archiver"); // 1. استيراد archiver
+const axios = require("axios"); // استيراد axios
 // ********************** تعريف دالة handleError هنا **********************
 const handleError = require("../utils/errorMiddleware");
 // to compresse photos before upload
@@ -195,45 +196,112 @@ const deleteAllImages = async (req, res) => {
 
 //========================== download image ======================================
 const downloadImage = async (req, res) => {
-    // 1. فك تشفير Public ID (كما كان صحيحاً)
-    const publicId = decodeURIComponent(req.params.publicId); 
-    
-    try {
-        const image = await ImageModel.findOne({ public_id: publicId });
-        
-        if (!image) {
-            return res.status(404).json({ message: "لم يتم العثور على الصورة للتحميل." });
-        }
-        
-        // 2. توليد رابط الصورة المباشر (بدون flags: attachment)
-        const imageUrl = cloudinary.url(image.public_id, {
-             resource_type: "image",
-        });
-        
-        // 3. ⭐️ الخطوة الحاسمة: جلب الملف من Cloudinary باستخدام Axios
-        const response = await axios({
-            url: imageUrl,
-            method: 'GET',
-            responseType: 'stream' // مهم جداً لجلب الملف كـ Stream
-        });
-        
-        // 4. تحديد اسم الملف المطلوب
-        const originalFileName = publicId.split('/').pop();
-        const suggestedFileName = `downloaded-${originalFileName}.webp`; // أو .png/.jpg حسب صيغة الرفع
+  // 1. فك تشفير Public ID (كما كان صحيحاً)
+  const publicId = decodeURIComponent(req.params.publicId);
 
-        // 5. ⭐️ إرسال ترويسة Content-Disposition القسرية
-        res.setHeader('Content-Disposition', `attachment; filename="${suggestedFileName}"`);
-        
-        // 6. إرسال نوع المحتوى
-        res.setHeader('Content-Type', response.headers['content-type'] || 'image/webp');
-        
-        // 7. بث الملف (Streaming) إلى المتصفح مباشرةً
-        response.data.pipe(res);
-        
-    } catch (error) {
-        console.error("Download Error (Streaming):", error);
-        return handleError(res, error);
+  try {
+    const image = await ImageModel.findOne({ public_id: publicId });
+
+    if (!image) {
+      return res
+        .status(404)
+        .json({ message: "لم يتم العثور على الصورة للتحميل." });
     }
+
+    // 2. توليد رابط الصورة المباشر (بدون flags: attachment)
+    const imageUrl = cloudinary.url(image.public_id, {
+      resource_type: "image",
+    });
+
+    // 3. ⭐️ الخطوة الحاسمة: جلب الملف من Cloudinary باستخدام Axios
+    const response = await axios({
+      url: imageUrl,
+      method: "GET",
+      responseType: "stream", // مهم جداً لجلب الملف كـ Stream
+    });
+
+    // 4. تحديد اسم الملف المطلوب
+    const originalFileName = publicId.split("/").pop();
+    const suggestedFileName = `downloaded-${originalFileName}.webp`; // أو .png/.jpg حسب صيغة الرفع
+
+    // 5. ⭐️ إرسال ترويسة Content-Disposition القسرية
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${suggestedFileName}"`
+    );
+
+    // 6. إرسال نوع المحتوى
+    res.setHeader(
+      "Content-Type",
+      response.headers["content-type"] || "image/webp"
+    );
+
+    // 7. بث الملف (Streaming) إلى المتصفح مباشرةً
+    response.data.pipe(res);
+  } catch (error) {
+    console.error("Download Error (Streaming):", error);
+    return handleError(res, error);
+  }
+};
+
+//========================== download all images ======================================
+// npm install archiver
+const downloadAll = async (req, res) => {
+  const userId = req.params.userId;
+  // المسار في Cloudinary الذي يحتوي على جميع صور المستخدم
+  const folderPath = `mernstack/gallery/${userId}`;
+  try {
+    // 1. جلب جميع الصور للمستخدم من قاعدة البيانات
+    const images = await ImageModel.find({ owner: userId }).select("public_id");
+    if (!images.length === 0) {
+      return res.status(404).json({ message: "لا توجد صور متاحة للتحميل." });
+    }
+    // 2. إعداد ترويسات الاستجابة (Headers)
+    const archive = archiver("zip", {
+      zlib: { level: 9 }, // مستوى ضغط عالي
+    });
+    const zipFileName = `gallery-backup-${userId}.zip`;
+    //  تحديد نوع المحتوى وترويسة اسم الملف للمتصفح
+    res.setHeader("Content-Type", "application/zip");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${zipFileName}"`
+    );
+
+    // 3. ربط ملف الـ ZIP بالاستجابة (Streaming)
+    archive.pipe(res);
+    // 4. تكرار لجلب كل صورة وإضافتها إلى الملف المضغوط
+    for (const image of images) {
+      const publicId = image.public_id;
+
+      // توليد رابط الصورة المباشر من Cloudinary
+      const imageUrl = cloudinary.url(publicId, { resource_type: "image" });
+
+      // جلب الصورة كـ Stream باستخدام Axios
+      const response = await axios({
+        url: imageUrl,
+        method: "GET",
+        responseType: "stream",
+      });
+
+      // استخراج اسم الملف النهائي (بدون مسار المجلدات)
+      const fileName = publicId.split("/").pop() + ".webp";
+
+      // إضافة Stream الصورة إلى ملف الـ ZIP
+      archive.append(response.data, { name: fileName });
+    }
+
+    // 5. إنهاء عملية الضغط وإرسال الـ ZIP إلى المتصفح
+    await archive.finalize();
+  } catch (error) {
+    console.error("Download All Error:", error);
+    // في حالة حدوث خطأ، يجب إنهاء الاتصال لمنع توقف المتصفح
+    if (!res.headersSent) {
+      return handleError(res, error);
+    } else {
+      res.end();
+    }
+  }
 };
 module.exports = {
   uploadImage,
@@ -242,4 +310,5 @@ module.exports = {
   deleteAllImages,
   uploadmanyImages,
   downloadImage,
+  downloadAll
 };
