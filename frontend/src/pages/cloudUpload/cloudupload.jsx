@@ -27,6 +27,7 @@ import {
   Menu,
   DialogContent,
   Dialog,
+  ImageListItemBar,
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -446,7 +447,7 @@ const CloudinarUploud = () => {
         Cloudinary Upload
       </Typography>
 
-      {/* Upload Section */}
+  {/************************** Upload Btns Section *********************** */}
       <Box
         sx={{
           display: "flex",
@@ -543,7 +544,7 @@ const CloudinarUploud = () => {
             )}{" "}
           </Button>
         </Box>
-        {/* upload many images  */}
+  {/***************************** upload many images btn **************************/}
         <Box
           sx={{
             width: 300, // تحديد عرض ثابت
@@ -620,6 +621,8 @@ const CloudinarUploud = () => {
           </Button>
         </Box>
       </Box>
+
+{/* **************************** gallerry section ********************** */}
       <Divider
         sx={{ my: 4 }}
         // استخدام component="h2" أو "h3" مفيد لتحسين محركات البحث (SEO)
@@ -643,8 +646,7 @@ const CloudinarUploud = () => {
           All Photos
         </Typography>
       </Divider>
-      {/* القسم الخاص بزر حذف الجميع */}
-
+{/********************************** delete All and download All Menu ************************* */}
       {imagesLoading ? (
         // 1. إذا كان التحميل جارياً، اعرض الهيكل المؤقت
         <LoadingSkeleton />
@@ -703,13 +705,13 @@ const CloudinarUploud = () => {
             </Box>
           )}
 
-          {/* no photo section  */}
+{/************************no photo section ******************************** */}
           {allImgs?.length < 1 && (
             <Typography sx={{ textAlign: "center" }}>
               No photos added yet{" "}
             </Typography>
           )}
-          {/* photos section  */}
+{/***************************** photos section  ***************************/}
           <ImageList
             sx={{ width: "100%" }}
             cols={getCols()} // هذا هو الاستخدام الصحيح
@@ -737,52 +739,64 @@ const CloudinarUploud = () => {
                         width={"cover"}
                         // onLoad={() => setIsLoaded(true)} // تحديث الحالة عند اكتمال التحميل
                       />
-                    </ImageListItem>
-                    <Box
+{/*********************** delete and download image btns ************************************** */}
+                      <ImageListItemBar
+                      title="" // يمكن ترك العنوان فارغًا
                       sx={{
-                        height: "10%",
-                        backgroundColor: "#12638773",
-                        borderRadius: "0 0 20px 20px",
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
+                        background:
+                          "linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 70%, rgba(0,0,0,0) 100%)",
                       }}
-                    >
-                      {isDeleting ? (
-                        <CircularProgress size={24} color="error" />
-                      ) : (
-                        <IconButton
-                          onClick={async (e) => {
-                            e.stopPropagation(); // ⚠️ منع حدث النقر على الصورة من العمل
-                            const publicId = await img.public_id;
-                            const owner = img.owner;
-                            handleDelete(publicId, owner);
-                          }}
-                          color="error"
-                          // يمكن تعطيل الزر إذا كانت عملية حذف أخرى جارية
-                          disabled={deletingId !== null}
+                      actionIcon={
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", p: 0.5 }}
                         >
-                          <Delete />
-                        </IconButton>
-                      )}
+                          {/* 1. زر الحذف */}
+                          {isDeleting ? (
+                            // عرض دائرة التحميل إذا كان الـ ID الحالي قيد الحذف
+                            <CircularProgress
+                              size={24}
+                              sx={{ color: "error.main", mr: 1 }}
+                            />
+                          ) : (
+                            <IconButton
+                              onClick={(e) => {
+                                e.stopPropagation(); // منع فتح الـ Dialog
+                                handleDelete(img.public_id, img.owner);
+                              }}
+                              // 💡 استخدام لون أبيض (مخفف) ليتناسب مع الخلفية السوداء الشفافة
+                              sx={{ color: "rgba(255, 255, 255, 0.85)" }}
+                              aria-label={`delete ${img.public_id}`}
+                              disabled={deletingId !== null}
+                            >
+                              <Delete />
+                            </IconButton>
+                          )}
 
-                      {/* download photo func  */}
-
-                      <IconButton
-                        onClick={(e) => {
-                          e.stopPropagation(); // ⚠️ منع حدث النقر على الصورة من العمل
-                          handledownload(img);
-                        }}
-                      >
-                        <Download />
-                      </IconButton>
-                    </Box>
+                          {/* 2. زر التحميل */}
+                          <IconButton
+                            onClick={(e) => {
+                              e.stopPropagation(); // منع فتح الـ Dialog
+                              handledownload(img);
+                            }}
+                            // 💡 استخدام لون أبيض (مخفف)
+                            sx={{ color: "rgba(255, 255, 255, 0.85)" }}
+                            aria-label={`download ${img.public_id}`}
+                          >
+                            <Download />
+                          </IconButton>
+                        </Box>
+                      }
+                      // وضع الأيقونات في الجانب الأيمن العلوي
+                      actionPosition="right"
+                    />
+                    </ImageListItem>
+                    
                   </Box>
                 );
               })}
           </ImageList>
 
-          {/****************************** start dialog ********************************** */}
+{/****************************** start dialog ********************************** */}
           {selectedImage && ( // تأكد من وجود صورة مختارة
             <Dialog
               open={openDialog}
