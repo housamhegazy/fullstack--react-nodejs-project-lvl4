@@ -64,14 +64,14 @@ const CloudinarUploud = () => {
   //======================================= FETCHING PAGE DATA =================================================
 
   const getImages = useCallback(
-    async (pageNumber = currentPage) => {
+    async (pageNumber = currentPage,newSortOrder = sortOrder) => {
       // ✅ التحقق المبكر
       if (!user || !user._id) {
         setImagesLoading(false);
         return;
       }
       setImagesLoading(true);
-      const orderParam = `&order=${sortOrder}`; // بناء باراميتر الفرز (مثلاً: &order=desc)
+      const orderParam = `&order=${newSortOrder}`;
       try {
         const result = await fetch(
           `http://localhost:3000/api/allimages/${
@@ -106,7 +106,7 @@ const CloudinarUploud = () => {
         setImagesLoading(false);
       }
     },
-    [currentPage, sortOrder, user, IMAGES_PER_PAGE]
+    [currentPage, user, IMAGES_PER_PAGE]
   );
   // ====================== handle pagination ============================================
   const handlePageChange = (event, value) => {

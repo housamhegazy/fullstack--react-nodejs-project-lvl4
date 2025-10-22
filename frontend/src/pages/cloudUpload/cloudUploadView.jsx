@@ -307,6 +307,7 @@ const CloudUploadView = ({
         <>
           {/* delete all btn menu  */}
           {allImgs?.length > 0 && (
+//======================== box of two menu download - delete all - sorting ================================
             <Box sx={{display:"flex",justifyContent:"space-between"}}>
               <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
                 {/* 1. الزر الذي يفتح القائمة المنسدلة */}
@@ -375,7 +376,7 @@ const CloudUploadView = ({
                     onChange={(e) => {
                       const newOrder = e.target.value;
                       setSortOrder(newOrder); // تحديث الـ State
-                      getImages(1); // 💡 مهم: إعادة جلب الصفحة الأولى (1) بالترتيب الجديد
+                      getImages(1, newOrder); // 💡 مهم: إعادة جلب الصفحة الأولى (1) بالترتيب الجديد
                     }}
                   >
                     {/* 1. الأحدث أولاً (تنازلي: Newest) */}
