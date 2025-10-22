@@ -1,4 +1,11 @@
-import { Upload, Delete, Cloud } from "@mui/icons-material";
+import {
+  Upload,
+  Delete,
+  Cloud,
+  CloudDownload,
+  KeyboardArrowDown,
+  Download,
+} from "@mui/icons-material";
 import {
   useMediaQuery,
   Box,
@@ -15,6 +22,8 @@ import {
   IconButton,
   CircularProgress,
   Pagination,
+  MenuItem,
+  Menu,
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -43,6 +52,25 @@ const CloudinarUploud = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const IMAGES_PER_PAGE = 9; // يمكنك تغيير هذا الرقم
+  // delete all menu state
+  const [anchorEl, setAnchorEl] = useState(null);
+  const open = Boolean(anchorEl);
+
+  // open delete all menu func
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  // close delete all menu func
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  // fuction to delete all and close menu
+  const handleDeleteAllAndClose = () => {
+    handleDeleteAll(); // استدعاء دالة الحذف الحالية
+    handleClose();
+  };
 
   //======================================= FETCHING PAGE DATA =================================================
 
@@ -327,6 +355,23 @@ const CloudinarUploud = () => {
     }
   };
 
+  //=====================================download image =================================
+  const handledownload = (img) => {
+    const publicId = img.public_id;
+    console.log(publicId);
+    try {
+      const encodedPublicId = encodeURIComponent(publicId);
+
+        const backendDownloadRoute = `http://localhost:3000/api/download/${encodedPublicId}`;
+        window.open(backendDownloadRoute, '_blank'); 
+
+        Swal.fire("Ready!", "سيتم بدء تحميل الصورة قريباً.", "info");
+
+
+    } catch (error) {
+      console.log(error);
+    }
+  };
   //============================================================================
   const theme = useTheme(); // قم بتعريف Media Queries لنقاط التوقف
   const isSmall = useMediaQuery(theme.breakpoints.up("sm")); // أكبر من أو يساوي 'sm'
@@ -352,18 +397,18 @@ const CloudinarUploud = () => {
   return (
     <Box component={"form"}>
       <Typography
-        variant="h4"
+        variant="h5"
         sx={{
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
           alignItems: "center",
-          mb: 4,
+          mb: 2,
         }}
       >
         {" "}
         <Cloud
-          sx={{ ml: 2, fontSize: 100, color: theme.palette.primary.light }}
+          sx={{ ml: 2, fontSize: 50, color: theme.palette.primary.light }}
         />
         Cloudinary Upload
       </Typography>
@@ -553,7 +598,7 @@ const CloudinarUploud = () => {
           component="span"
           sx={{
             color: "text.secondary",
-            fontWeight: 500,
+            fontWeight: 400,
             px: 3,
             fontSize: {
               xs: "1.5rem",
@@ -572,35 +617,66 @@ const CloudinarUploud = () => {
         <LoadingSkeleton />
       ) : (
         <>
+          {/* delete all btn menu  */}
           {allImgs?.length > 0 && (
             <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
+              {/* 1. الزر الذي يفتح القائمة المنسدلة */}
               <Button
-                onClick={handleDeleteAll}
+                id="options-button"
+                aria-controls={open ? "options-menu" : undefined}
+                aria-haspopup="true"
+                aria-expanded={open ? "true" : undefined}
+                onClick={handleClick}
                 variant="contained"
-                color="error" // 💡 استخدام لون الخطأ (الأحمر) ليتناسب مع الحذف
-                disabled={deletingAll} //  تعطيل أثناء التحميل
-                startIcon={
-                  deletingAll ? (
-                    <CircularProgress size={20} color="inherit" />
-                  ) : (
-                    <Delete />
-                  )
-                } // ⚙️ إضافة أيقونة التحميل/الحذف
-                sx={{
-                  // 🖌️ تنسيق إضافي لجعله يبدو بارزاً
-                  borderRadius: 2,
-                  py: 1,
+                color="primary" // يمكنك استخدام لون مختلف لتمييزه كزر خيارات
+                sx={{ borderRadius: 2, py: 1 }}
+                endIcon={<KeyboardArrowDown />} // إضافة أيقونة للإشارة إلى قائمة منسدلة
+              >
+                Gallery Options
+              </Button>
+
+              {/* 2. مكون القائمة المنسدلة (Menu) */}
+              <Menu
+                id="options-menu"
+                anchorEl={anchorEl}
+                open={open}
+                onClose={handleClose}
+                MenuListProps={{
+                  "aria-labelledby": "options-button",
                 }}
               >
-                {deletingAll ? "Deleting All..." : "Delete All Photos"}
-              </Button>
+                {/* 3. عناصر القائمة (MenuItems) */}
+                <MenuItem
+                  onClick={handleDeleteAllAndClose}
+                  disabled={deletingAll} // تعطيل العنصر أثناء الحذف
+                  sx={{
+                    color: "error.main", // تلوين النص باللون الأحمر
+                    fontWeight: "bold",
+                  }}
+                >
+                  {deletingAll ? (
+                    <CircularProgress size={20} color="error" sx={{ mr: 1 }} />
+                  ) : (
+                    <Delete sx={{ mr: 1 }} />
+                  )}
+                  {deletingAll ? "Deleting All..." : "Delete All Photos"}
+                </MenuItem>
+
+                {/* يمكنك إضافة خيارات أخرى هنا: */}
+                <MenuItem onClick={handleClose}>
+                  <CloudDownload sx={{ mr: 1 }} /> Download All
+                </MenuItem>
+              </Menu>
             </Box>
           )}
+
+          {/* no photo section  */}
           {allImgs?.length < 1 && (
             <Typography sx={{ textAlign: "center" }}>
               No photos added yet{" "}
             </Typography>
           )}
+          {/* photos section  */}
           <ImageList
             sx={{ width: "100%" }}
             cols={getCols()} // هذا هو الاستخدام الصحيح
@@ -652,6 +728,16 @@ const CloudinarUploud = () => {
                           <Delete />
                         </IconButton>
                       )}
+
+                      {/* download photo func  */}
+
+                      <IconButton
+                        onClick={() => {
+                          handledownload(img);
+                        }}
+                      >
+                        <Download />
+                      </IconButton>
                     </Box>
                   </Box>
                 );

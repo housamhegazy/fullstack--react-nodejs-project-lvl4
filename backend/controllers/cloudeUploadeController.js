@@ -1,60 +1,57 @@
 const ImageModel = require("../models/galleryModel");
 const { cloudinary, streamUpload } = require("../config/cloudinaryConfig");
+const axios = require('axios'); // استيراد axios
 // ********************** تعريف دالة handleError هنا **********************
 const handleError = require("../utils/errorMiddleware");
 // to compresse photos before upload
 const sharp = require("sharp");
 
-const uploadImage = 
-  async (req, res) => {
-    if (!req.file) {
-      console.error("File missing in request.");
-      return res.status(400).json({ message: "لم يتم إرسال ملف الصورة." });
+const uploadImage = async (req, res) => {
+  if (!req.file) {
+    console.error("File missing in request.");
+    return res.status(400).json({ message: "لم يتم إرسال ملف الصورة." });
+  }
+  try {
+    const userId = req.body.userId;
+    if (!userId) {
+      return res.status(400).json({ message: "معرف المستخدم (userId) مطلوب." });
     }
-    try {
-      const userId = req.body.userId; 
-      if (!userId) {
-        return res
-          .status(400)
-          .json({ message: "معرف المستخدم (userId) مطلوب." });
-      }
-      
-      //================== compresse photos==============================================
-      const processedBuffer = await sharp(req.file.buffer) // أو file.buffer
-        .resize(800) // 1. تغيير العرض إلى 800 بكسل (الطول يتغير تلقائياً)
-        .webp({ quality: 80 }) // 2. تحويل التنسيق إلى WebP وضغط الجودة إلى 80%
-        .toBuffer(); // 3. إرجاع النتيجة كـ Buffer جديد
 
+    //================== compresse photos==============================================
+    const processedBuffer = await sharp(req.file.buffer) // أو file.buffer
+      .resize(800) // 1. تغيير العرض إلى 800 بكسل (الطول يتغير تلقائياً)
+      .webp({ quality: 80 }) // 2. تحويل التنسيق إلى WebP وضغط الجودة إلى 80%
+      .toBuffer(); // 3. إرجاع النتيجة كـ Buffer جديد
 
-        //=================== upload to cloudinary ========================================
-      const uniquePublicId = `${userId}-${Date.now()}`;
-      const result = await streamUpload(processedBuffer, {
-        folder: `mernstack/gallery/${userId}`, // sort folders in cloudinary based on userId
-        // public_id: userId, //  هذا هو اسم الصوره ويضمن عند رفع صوره يقوم بحذف القديمه ومن الممكن تغييره الى دالة الوقت لرفع كل صوره باسم مختلف والاحتفاظ بكل الصور
-        public_id: uniquePublicId,
-        upload_preset: "gallery_preset", // cloudinary settings لازم تكتب نفس الاسم ده في الكلاوديناري
-      });
+    //=================== upload to cloudinary ========================================
+    const uniquePublicId = `${userId}-${Date.now()}`;
+    const result = await streamUpload(processedBuffer, {
+      folder: `mernstack/gallery/${userId}`, // sort folders in cloudinary based on userId
+      // public_id: userId, //  هذا هو اسم الصوره ويضمن عند رفع صوره يقوم بحذف القديمه ومن الممكن تغييره الى دالة الوقت لرفع كل صوره باسم مختلف والاحتفاظ بكل الصور
+      public_id: uniquePublicId,
+      upload_preset: "gallery_preset", // cloudinary settings لازم تكتب نفس الاسم ده في الكلاوديناري
+    });
 
-      //=========================== send data in mongoo database ===============================
-      const newImage = new ImageModel({
-        owner: userId,
-        imageUrl: result.secure_url, // الرابط الذي سنستخدمه للعرض
-        public_id: result.public_id, // مفيد لعمليات الحذف أو التحديث
-      });
-      await newImage.save();
-      res.json({
-        message: "✅ تم رفع الصورة بنجاح (مباشر)",
-        imageUrl: result.secure_url, // // image link in cloudinary
-        owner: userId,
-        publicId: result.public_id,
-      });
-    } catch (err) {
-      console.error("Cloudinary Upload Error:", err);
-      res
-        .status(500)
-        .json({ message: "حدث خطأ أثناء رفع الصورة إلى Cloudinary" });
-    }
-  };
+    //=========================== send data in mongoo database ===============================
+    const newImage = new ImageModel({
+      owner: userId,
+      imageUrl: result.secure_url, // الرابط الذي سنستخدمه للعرض
+      public_id: result.public_id, // مفيد لعمليات الحذف أو التحديث
+    });
+    await newImage.save();
+    res.json({
+      message: "✅ تم رفع الصورة بنجاح (مباشر)",
+      imageUrl: result.secure_url, // // image link in cloudinary
+      owner: userId,
+      publicId: result.public_id,
+    });
+  } catch (err) {
+    console.error("Cloudinary Upload Error:", err);
+    res
+      .status(500)
+      .json({ message: "حدث خطأ أثناء رفع الصورة إلى Cloudinary" });
+  }
+};
 
 const uploadmanyImages = async (req, res) => {
   if (!req.files || req.files.length === 0) {
@@ -63,9 +60,8 @@ const uploadmanyImages = async (req, res) => {
   }
 
   const userId = req.body.userId;
-  const uploadedResults = []; 
+  const uploadedResults = [];
   try {
-
     if (!userId) {
       return res.status(400).json({ message: "معرف المستخدم (userId) مطلوب." });
     }
@@ -75,11 +71,11 @@ const uploadmanyImages = async (req, res) => {
       const uniquePublicId = `${userId}-${Date.now()}-${Math.random()
         .toString(16)
         .slice(2)}`;
-    //================ compress all photos ======================================
-        const processedBuffer = await sharp(file.buffer) 
-        .resize(800) // 
-        .webp({ quality: 80 }) 
-        .toBuffer(); 
+      //================ compress all photos ======================================
+      const processedBuffer = await sharp(file.buffer)
+        .resize(800) //
+        .webp({ quality: 80 })
+        .toBuffer();
       // ============== رفع الصورة إلى Cloudinary ==================================
       const result = await streamUpload(processedBuffer, {
         folder: `mernstack/gallery/${userId}`, // مجلد مخصص لكل مستخدم
@@ -196,10 +192,54 @@ const deleteAllImages = async (req, res) => {
     return handleError(res, error);
   }
 };
+
+//========================== download image ======================================
+const downloadImage = async (req, res) => {
+    // 1. فك تشفير Public ID (كما كان صحيحاً)
+    const publicId = decodeURIComponent(req.params.publicId); 
+    
+    try {
+        const image = await ImageModel.findOne({ public_id: publicId });
+        
+        if (!image) {
+            return res.status(404).json({ message: "لم يتم العثور على الصورة للتحميل." });
+        }
+        
+        // 2. توليد رابط الصورة المباشر (بدون flags: attachment)
+        const imageUrl = cloudinary.url(image.public_id, {
+             resource_type: "image",
+        });
+        
+        // 3. ⭐️ الخطوة الحاسمة: جلب الملف من Cloudinary باستخدام Axios
+        const response = await axios({
+            url: imageUrl,
+            method: 'GET',
+            responseType: 'stream' // مهم جداً لجلب الملف كـ Stream
+        });
+        
+        // 4. تحديد اسم الملف المطلوب
+        const originalFileName = publicId.split('/').pop();
+        const suggestedFileName = `downloaded-${originalFileName}.webp`; // أو .png/.jpg حسب صيغة الرفع
+
+        // 5. ⭐️ إرسال ترويسة Content-Disposition القسرية
+        res.setHeader('Content-Disposition', `attachment; filename="${suggestedFileName}"`);
+        
+        // 6. إرسال نوع المحتوى
+        res.setHeader('Content-Type', response.headers['content-type'] || 'image/webp');
+        
+        // 7. بث الملف (Streaming) إلى المتصفح مباشرةً
+        response.data.pipe(res);
+        
+    } catch (error) {
+        console.error("Download Error (Streaming):", error);
+        return handleError(res, error);
+    }
+};
 module.exports = {
   uploadImage,
   getImages,
   deleteImage,
   deleteAllImages,
   uploadmanyImages,
+  downloadImage,
 };
