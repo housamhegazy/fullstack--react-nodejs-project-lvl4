@@ -1,5 +1,4 @@
-
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useGetUserProfileQuery } from "../../Redux/userApi";
 import Swal from "sweetalert2";
@@ -7,10 +6,7 @@ import CloudUploadView from "./cloudUploadView";
 
 const CloudinarUploud = () => {
   const navigate = useNavigate();
-  const {
-    data: user,
-    isLoading: userLoading,
-  } = useGetUserProfileQuery(); // Fetch current user
+  const { data: user, isLoading: userLoading } = useGetUserProfileQuery(); // Fetch current user
   const [selectedFile, setSelectedFile] = useState(null);
   const [selectedManyFiles, setSelectedManyFiles] = useState(null);
   const [preview, setPreview] = useState(null);
@@ -24,6 +20,7 @@ const CloudinarUploud = () => {
   const [imagesLoading, setImagesLoading] = useState(true); // loading during fetch images
   const [openDialog, setOpenDialog] = useState(false); // open and close Dialog
   const [selectedImage, setSelectedImage] = useState(null); // store dialoge image in state
+  const [sortOrder, setSortOrder] = useState("desc"); // -1 للأحدث (تنازلي)، 1 للأقدم (تصاعدي)
   // pagination states used in getimages func
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -66,37 +63,51 @@ const CloudinarUploud = () => {
   };
   //======================================= FETCHING PAGE DATA =================================================
 
-  const getImages = async (pageNumber = currentPage) => {
-    setImagesLoading(true);
-    try {
-      const result = await fetch(
-        `http://localhost:3000/api/allimages/${
-          user && user._id
-        }?page=${pageNumber}&limit=${IMAGES_PER_PAGE}`,
-        {
-          method: "GET",
-          credentials: "include",
-        }
-      );
-      const alldata = await result.json();
-      if (alldata.images && Array.isArray(alldata.images)) {
-        setAllImgs(alldata.images);
-        // ✅ تحديث الـ State بناءً على الرد من الباك إند
-        setTotalPages(alldata.totalPages);
-        setCurrentPage(alldata.currentPage); // قد يكون مهمًا إذا كانت هناك عمليات تحويل
-        console.log(alldata.message);
-      } else {
-        // تعامل مع الحالة التي يكون فيها الرد غير متوقع
-        setAllImgs([]);
-        setTotalPages(1);
+  const getImages = useCallback(
+    async (pageNumber = currentPage) => {
+      // ✅ التحقق المبكر
+      if (!user || !user._id) {
+        setImagesLoading(false);
+        return;
       }
-    } catch (err) {
-      console.error(err);
-      setError(err.message + " error uploading image");
-    } finally {
-      setImagesLoading(false);
-    }
-  };
+      setImagesLoading(true);
+      const orderParam = `&order=${sortOrder}`; // بناء باراميتر الفرز (مثلاً: &order=desc)
+      try {
+        const result = await fetch(
+          `http://localhost:3000/api/allimages/${
+            user && user._id
+          }?page=${pageNumber}&limit=${IMAGES_PER_PAGE}${orderParam}`,
+          {
+            method: "GET",
+            credentials: "include",
+          }
+        );
+        const alldata = await result.json();
+        if (alldata.images && Array.isArray(alldata.images)) {
+          setAllImgs(alldata.images);
+          setTotalPages(alldata.totalPages);
+          setCurrentPage(alldata.currentPage); // قد يكون مهمًا إذا كانت هناك عمليات تحويل
+          console.log(alldata.message);
+        } else if (result.status === 404) {
+          // إذا لم يتم العثور على صور
+          setAllImgs([]);
+          setTotalPages(1);
+          setCurrentPage(1);
+        } else {
+          // تعامل مع الحالة التي يكون فيها الرد غير متوقع
+          setAllImgs([]);
+          setTotalPages(1);
+          setCurrentPage(1);
+        }
+      } catch (err) {
+        console.error(err);
+        setError(err.message + " error uploading image");
+      } finally {
+        setImagesLoading(false);
+      }
+    },
+    [currentPage, sortOrder, user, IMAGES_PER_PAGE]
+  );
   // ====================== handle pagination ============================================
   const handlePageChange = (event, value) => {
     setCurrentPage(value);
@@ -377,7 +388,6 @@ const CloudinarUploud = () => {
     }
   };
 
-
   return (
     <CloudUploadView
       {...{
@@ -410,6 +420,9 @@ const CloudinarUploud = () => {
         totalPages,
         preview,
         open,
+        sortOrder,
+        getImages,
+        setSortOrder,
       }}
     />
   );

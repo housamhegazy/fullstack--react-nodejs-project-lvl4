@@ -109,32 +109,44 @@ const uploadmanyImages = async (req, res) => {
     res.status(500).json({ message: "حدث خطأ أثناء رفع الصور إلى Cloudinary" });
   }
 };
+
+// router.get("/api/allImages/:userId?page=1&limit=9&order=desc", getImages);
 const getImages = async (req, res) => {
-  // 1. ✅ استلام معلمات الترقيم من الـ Query
+  // 1. pagination Query
   const page = parseInt(req.query.page) || 1; // رقم الصفحة الافتراضي هو 1
   const limit = parseInt(req.query.limit) || 9; // عدد العناصر في الصفحة، الافتراضي 9
   const userId = req.params.userId;
   const skip = (page - 1) * limit; // حساب عدد العناصر التي سيتم تخطيها
-  try {
-    // 2. ✅ حساب إجمالي عدد العناصر
-    const totalImages = await ImageModel.countDocuments({ owner: userId });
-    const userImages = await ImageModel.find({ owner: req.params.userId })
-      .sort({ createdAt: -1 }) // Fetch all images
-      .skip(skip) // تخطي عدد معين من العناصر
-      .limit(limit); // تحديد عدد العناصر المراد جلبها
 
-    if (userImages.length === 0 && page === 1) {
+  // 1. sorting and filtering Query
+  const sortField = req.query.sort || "createdAt"; // الفرز الافتراضي: تاريخ الإنشاء
+  const sortOrder = req.query.order === "asc" ? 1 : -1; // -1 تنازلي (الأحدث أولاً)، 1 تصاعدي
+
+  let filter = { owner: userId };
+  try {
+    // ⭐️ الخطوة 1: حساب الإجمالي بناءً على الفلتر (ضروري قبل الجلب)
+    const totalImages = await ImageModel.countDocuments(filter);
+    // التحقق من عدم وجود صور قبل الجلب لتجنب العمل غير الضروري
+    if (totalImages === 0 && page === 1) {
       return res
         .status(404)
         .json({ message: "لم يتم العثور على صور لهذا المستخدم." });
     }
+
+    // ⭐️ الخطوة 2: استعلام موحد يطبق الفرز والتقسيم
+    const images = await ImageModel.find(filter)
+      .sort({ [sortField]: sortOrder }) // ✅ تطبيق الفرز الذي تم تحديده
+      .skip(skip) // ✅ تطبيق التخطي
+      .limit(limit); // ✅ تطبيق الحد
+
+    // ⭐️ الخطوة 3: إرسال الرد
     res.status(200).json({
-      message: "✅ تم استرجاع الصور بنجاح من Cloudinary (مباشر)",
-      images: userImages,
+      message: "✅ تم استرجاع الصور بنجاح.",
+      images: images, // ✅ استخدام النتيجة الصحيحة
       currentPage: page,
-      totalPages: Math.ceil(totalImages / limit), // حساب إجمالي عدد الصفحات
+      totalPages: Math.ceil(totalImages / limit),
       totalImages: totalImages,
-    }); // 200 OK
+    });
   } catch (error) {
     return handleError(res, error);
   }
@@ -310,5 +322,5 @@ module.exports = {
   deleteAllImages,
   uploadmanyImages,
   downloadImage,
-  downloadAll
+  downloadAll,
 };

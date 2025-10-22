@@ -27,6 +27,9 @@ import {
   Pagination,
   useTheme,
   useMediaQuery,
+  Select,
+  FormControl,
+  InputLabel,
 } from "@mui/material";
 
 const CloudUploadView = ({
@@ -58,7 +61,10 @@ const CloudUploadView = ({
   currentPage,
   totalPages,
   preview,
-  open
+  open,
+  sortOrder,
+  getImages,
+  setSortOrder,
 }) => {
   //============================================================================
   const theme = useTheme(); // قم بتعريف Media Queries لنقاط التوقف
@@ -90,12 +96,11 @@ const CloudUploadView = ({
           flexDirection: "column",
           justifyContent: "center",
           alignItems: "center",
-          mb: 2,
         }}
       >
         {" "}
         <Cloud
-          sx={{ ml: 2, fontSize: 50, color: theme.palette.primary.light }}
+          sx={{ ml: 2, fontSize: 70, color: theme.palette.primary.light }}
         />
         Cloudinary Upload
       </Typography>
@@ -276,14 +281,9 @@ const CloudUploadView = ({
       </Box>
 
       {/* **************************** gallerry section ********************** */}
-      <Divider
-        sx={{ my: 4 }}
-        // استخدام component="h2" أو "h3" مفيد لتحسين محركات البحث (SEO)
-        component="h2"
-      >
+      <Divider sx={{ my: 1 }} component="h2">
         <Typography
           variant="h4"
-          // component="span" لضمان عدم كسر الخط الفاصل
           component="span"
           sx={{
             color: "text.secondary",
@@ -307,54 +307,85 @@ const CloudUploadView = ({
         <>
           {/* delete all btn menu  */}
           {allImgs?.length > 0 && (
-            <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
-              {/* 1. الزر الذي يفتح القائمة المنسدلة */}
-              <Button
-                id="options-button"
-                aria-controls={open ? "options-menu" : undefined}
-                aria-haspopup="true"
-                aria-expanded={open ? "true" : undefined}
-                onClick={handleClick}
-                variant="contained"
-                color="primary" // يمكنك استخدام لون مختلف لتمييزه كزر خيارات
-                sx={{ borderRadius: 2, py: 1 }}
-                endIcon={<KeyboardArrowDown />} // إضافة أيقونة للإشارة إلى قائمة منسدلة
-              >
-                Gallery Options
-              </Button>
+            <Box sx={{display:"flex",justifyContent:"space-between"}}>
+              <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
+                {/* 1. الزر الذي يفتح القائمة المنسدلة */}
+                <Button
+                  id="options-button"
+                  aria-controls={open ? "options-menu" : undefined}
+                  aria-haspopup="true"
+                  aria-expanded={open ? "true" : undefined}
+                  onClick={handleClick}
+                  variant="contained"
+                  color="primary" // يمكنك استخدام لون مختلف لتمييزه كزر خيارات
+                  sx={{ borderRadius: 2, py: 1 }}
+                  endIcon={<KeyboardArrowDown />} // إضافة أيقونة للإشارة إلى قائمة منسدلة
+                >
+                  Gallery Options
+                </Button>
 
-              {/* 2. مكون القائمة المنسدلة (Menu) */}
-              <Menu
-                id="options-menu"
-                anchorEl={anchorEl}
-                open={open}
-                onClose={handleClose}
-                MenuListProps={{
-                  "aria-labelledby": "options-button",
-                }}
-              >
-                {/* 3. عناصر القائمة (MenuItems) */}
-                <MenuItem
-                  onClick={handleDeleteAllAndClose}
-                  disabled={deletingAll} // تعطيل العنصر أثناء الحذف
-                  sx={{
-                    color: "error.main", // تلوين النص باللون الأحمر
-                    fontWeight: "bold",
+                {/* 2. مكون القائمة المنسدلة (Menu) */}
+                <Menu
+                  id="options-menu"
+                  anchorEl={anchorEl}
+                  open={open}
+                  onClose={handleClose}
+                  MenuListProps={{
+                    "aria-labelledby": "options-button",
                   }}
                 >
-                  {deletingAll ? (
-                    <CircularProgress size={20} color="error" sx={{ mr: 1 }} />
-                  ) : (
-                    <Delete sx={{ mr: 1 }} />
-                  )}
-                  {deletingAll ? "Deleting All..." : "Delete All Photos"}
-                </MenuItem>
+                  {/* 3. عناصر القائمة (MenuItems) */}
+                  <MenuItem
+                    onClick={handleDeleteAllAndClose}
+                    disabled={deletingAll} // تعطيل العنصر أثناء الحذف
+                    sx={{
+                      color: "error.main", // تلوين النص باللون الأحمر
+                      fontWeight: "bold",
+                    }}
+                  >
+                    {deletingAll ? (
+                      <CircularProgress
+                        size={20}
+                        color="error"
+                        sx={{ mr: 1 }}
+                      />
+                    ) : (
+                      <Delete sx={{ mr: 1 }} />
+                    )}
+                    {deletingAll ? "Deleting All..." : "Delete All Photos"}
+                  </MenuItem>
 
-                {/* يمكنك إضافة خيارات أخرى هنا: */}
-                <MenuItem onClick={handleDownloadAllAndClose}>
-                  <CloudDownload sx={{ mr: 1 }} /> Download All
-                </MenuItem>
-              </Menu>
+                  {/* يمكنك إضافة خيارات أخرى هنا: */}
+                  <MenuItem onClick={handleDownloadAllAndClose}>
+                    <CloudDownload sx={{ mr: 1 }} /> Download All
+                  </MenuItem>
+                </Menu>
+              </Box>
+
+              <Box
+                sx={{ display: "flex", justifyContent: "flex-start", mb: 3 }}
+              >
+                {/* ⭐️ قائمة الفرز (Select Component) */}
+                <FormControl sx={{ minWidth: 200 }} size="small">
+                  <InputLabel id="sort-label">Order photos by </InputLabel>
+                  <Select
+                    labelId="sort-label"
+                    value={sortOrder} // القيمة الحالية ('desc' أو 'asc')
+                    label="Order photos by"
+                    onChange={(e) => {
+                      const newOrder = e.target.value;
+                      setSortOrder(newOrder); // تحديث الـ State
+                      getImages(1); // 💡 مهم: إعادة جلب الصفحة الأولى (1) بالترتيب الجديد
+                    }}
+                  >
+                    {/* 1. الأحدث أولاً (تنازلي: Newest) */}
+                    <MenuItem value={"desc"}>Newest First</MenuItem>
+
+                    {/* 2. الأقدم أولاً (تصاعدي: Oldest) */}
+                    <MenuItem value={"asc"}> Oldest First</MenuItem>
+                  </Select>
+                </FormControl>
+              </Box>
             </Box>
           )}
 
