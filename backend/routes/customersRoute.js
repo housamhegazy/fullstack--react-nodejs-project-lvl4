@@ -11,7 +11,7 @@ const {
   deleteAllCustomers
 } = require("../controllers/customersController");
 // 2. Route to Get All Users (GET)
-router.get("/api/allcustomers", getCustomers);
+router.get("/api/allcustomers/:userId", getCustomers);
 // 3. Route to Get one User (GET)
 router.get("/api/allcustomers/:id", getCustomerById);
 // 4. Route to open one customer in edit page (GET)

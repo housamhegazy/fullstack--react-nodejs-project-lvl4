@@ -35,15 +35,17 @@ const Customers = () => {
 
   // Function to fetch all customers
   const fetchcustomers = async () => {
+    const userId = user._id;
+    if (!user || !userId) {
+      return;
+    }
     setLoading(true);
     setError(null); // Clear previous errors
     try {
       const response = await axios.get(
-        "http://localhost:3000/api/allcustomers",
+        `http://localhost:3000/api/allcustomers/${userId}`,
         {
-          headers: {
-            Authorization: `Bearer ${user.token}`, // إرسال التوكن في رأس الطلب
-          },
+          withCredentials: true,
         }
       );
       setcustomers(response.data);
@@ -179,7 +181,7 @@ const Customers = () => {
       <Button
         variant="contained"
         color="error"
-        sx={{float:"right",mb:"20px",textTransform:"lowerCase"}}
+        sx={{ float: "right", mb: "20px", textTransform: "lowerCase" }}
         onClick={() => {
           handledeleteAll();
         }}

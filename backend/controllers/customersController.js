@@ -4,7 +4,7 @@ const { handleError } = require("../utils/errorMiddleware");
 // **************************************************************************
 const getCustomers = async (req, res) => {
   try {
-    const users = await CustomerModel.find({ owner: req.user.id }); // Fetch all users
+    const users = await CustomerModel.find({ owner: req.params.userId }); // Fetch all users
     res.status(200).json(users); // 200 OK
   } catch (error) {
     return handleError(res, error);
