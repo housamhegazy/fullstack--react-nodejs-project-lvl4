@@ -4,7 +4,7 @@ const User = require("../../models/userModel");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 // ********************** تعريف دالة handleError هنا **********************
-const handleError = require("../../utils/errorMiddleware");
+const {handleError} = require("../utils/errorMiddleware");
 
 const transporter = nodemailer.createTransport({
   service: "gmail",

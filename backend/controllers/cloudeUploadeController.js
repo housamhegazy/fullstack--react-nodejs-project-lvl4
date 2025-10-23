@@ -3,7 +3,7 @@ const { cloudinary, streamUpload } = require("../config/cloudinaryConfig");
 const archiver = require("archiver"); // 1. استيراد archiver
 const axios = require("axios"); // استيراد axios
 // ********************** تعريف دالة handleError هنا **********************
-const handleError = require("../utils/errorMiddleware");
+const {handleError} = require("../utils/errorMiddleware");
 // to compresse photos before upload
 const sharp = require("sharp");
 
@@ -124,13 +124,13 @@ const getImages = async (req, res) => {
 
   let filter = { owner: userId };
   try {
-    // ⭐️ الخطوة 1: حساب الإجمالي بناءً على الفلتر (ضروري قبل الجلب)
+    // اولا نحسب اجمالي عدد الصور 
     const totalImages = await ImageModel.countDocuments(filter);
     // التحقق من عدم وجود صور قبل الجلب لتجنب العمل غير الضروري
     if (totalImages === 0 && page === 1) {
       return res
         .status(404)
-        .json({ message: "لم يتم العثور على صور لهذا المستخدم." });
+        .json({ message: "No Photos for this User" });
     }
 
     // ⭐️ الخطوة 2: استعلام موحد يطبق الفرز والتقسيم

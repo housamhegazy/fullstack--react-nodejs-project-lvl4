@@ -3,7 +3,7 @@ const router = express.Router();
 const UserSchema = require("../models/userModel"); // استيراد نموذج المستخدم
 
 // دالة handleError (يمكنك وضعها في ملف منفصل واستيرادها)
-const handleError = require("../utils/errorMiddleware");
+const {handleError} = require("../utils/errorMiddleware");
 
 
 router.post("", async (req, res) => {

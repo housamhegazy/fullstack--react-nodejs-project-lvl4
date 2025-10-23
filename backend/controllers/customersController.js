@@ -1,6 +1,6 @@
 const CustomerModel = require("../models/customesSchema"); // استيراد نموذج المستخدم
 // ********************** تعريف دالة handleError هنا **********************
-const handleError = require("../utils/errorMiddleware");
+const {handleError} = require("../utils/errorMiddleware");
 // **************************************************************************
 const getCustomers = async (req, res) => {
   try {

@@ -28,6 +28,7 @@ const UserSchema = new mongoose.Schema(
     providers: [{ type: String, enum: ['local', 'google', 'facebook', 'twitter'], default: ['local'] }], // مصفوفة للمزودين,
     avatar: {
       type: String,
+      default: 'https://res.cloudinary.com/your-cloud-name/image/upload/v1/default-avatar.png',
     },
     fullName: {
       type: String,

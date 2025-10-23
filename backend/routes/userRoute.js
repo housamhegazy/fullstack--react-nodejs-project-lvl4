@@ -1,18 +1,22 @@
 const express = require("express");
 const router = express.Router();
 const User = require("../models/userModel");
-const mongoose = require("mongoose");
+// ********************** تعريف دالة handleError هنا **********************
+const {handleError} = require("../utils/errorMiddleware");
+//======================================= edite profile pic ==========================
+const ImageModel = require("../models/galleryModel");
 
 // =========================import cloudinary config ==================================
-const {upload, cloudinary,streamUpload } = require('../config/cloudinaryConfig')
-// ********************** تعريف دالة handleError هنا **********************
-const handleError = require("../utils/errorMiddleware");
-//======================================= edite profile pic ==========================
+const {
+  upload,
+  cloudinary,
+  streamUpload,
+} = require("../config/cloudinaryConfig");
 
 router.get("/api/profile", async (req, res) => {
   try {
     const userId = req.user._id; // يفترض أن isAuthenticated يضيف معرف المستخدم
-    const user = await User.findById(userId).select('-password');
+    const user = await User.findById(userId).select("-password");
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -93,9 +97,91 @@ router.put(
         user: updatedUser,
       });
     } catch (error) {
-      return handleError(res,error)
+      return handleError(res, error);
     }
   }
 );
+
+// delete user and images from cloudinary and mongoo
+
+router.delete("/api/deleteuser/:userId", async (req, res) => {
+  const userId = req.params.userId;
+
+  try {
+    // 1. 🖼️ جلب وحذف صور المعرض (يجب أن تكون أولاً)
+    const imagesToDelete = await ImageModel.find({ owner: userId }).select(
+      "public_id"
+    );
+    const publicIds = imagesToDelete.map((img) => img.public_id);
+
+    if (publicIds.length > 0) {
+      // حذف جماعي لصور المعرض من Cloudinary
+      await cloudinary.api.delete_resources(publicIds);
+      // حذف سجلات صور المعرض من MongoDB
+      await ImageModel.deleteMany({ owner: userId });
+    }
+
+    // 2. 👤 جلب بيانات المستخدم لحذف الصورة الشخصية (ضروري لاستخراج الـ Avatar URL)
+    const userToDelete = await User.findById(userId).select("avatar");
+
+    if (!userToDelete) {
+      // إيقاف العملية وإرجاع 404 إذا لم يتم العثور على المستخدم
+      return res
+        .status(404)
+        .json({ message: "User not found or already deleted." });
+    }
+
+    const avatarUrl = userToDelete.avatar;
+
+    // ⭐️ حذف مجلد الصورة الشخصية (Avatar Folder)
+    if (
+      avatarUrl &&
+      avatarUrl.includes("cloudinary.com") &&
+      !avatarUrl.includes("default") // تجنب حذف الصور الافتراضية
+    ) {
+      // 💡 استخدام نفس المنطق الذي يركز على مسار المجلد (الذي يحمل ID المستخدم)
+      const uploadIndex = avatarUrl.indexOf("/upload/") + "/upload/".length;
+      let publicIdPart = avatarUrl.substring(uploadIndex);
+
+      if (publicIdPart.startsWith("v")) {
+        publicIdPart = publicIdPart.substring(publicIdPart.indexOf("/") + 1);
+      }
+
+      const pathSegments = publicIdPart.split("/");
+      pathSegments.pop(); // إزالة اسم الملف
+
+
+
+      const folderPath = pathSegments.join("/"); // المسار الصحيح للحذف
+
+
+
+
+      if (folderPath) {
+
+
+        // / هذا يزيل الصورة الشخصية نفسها، ويضمن أن المجلد يصبح فارغًا
+                await cloudinary.api.delete_resources_by_prefix(folderPath);
+        // ⭐️ حذف المجلد بالكامل
+        await cloudinary.api.delete_folder(folderPath);
+      }
+    }
+
+    // 3. 🗑️ الخطوة الأخيرة: حذف سجل المستخدم نفسه
+    // نقوم بالحذف هنا بعد التأكد من حذف الأصول
+    await User.findByIdAndDelete(userId);
+
+    // 4. مسح الـ Cookie/Token لضمان تسجيل الخروج الفوري
+    res.cookie("token", "", { httpOnly: true, expires: new Date(0) });
+
+    // 5. إرسال رد النجاح
+    res.status(200).json({
+      message:
+        "✅ User, profile picture, and all gallery images deleted successfully.",
+    });
+  } catch (error) {
+    return handleError(res, error);
+  }
+});
 
 module.exports = router;

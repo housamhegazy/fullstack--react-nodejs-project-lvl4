@@ -13,7 +13,8 @@ import {
   IconButton,
   Alert,
   Button,
-  useTheme, // لعرض رسائل الخطأ
+  useTheme,
+  CircularProgress, // لعرض رسائل الخطأ
 } from "@mui/material";
 
 // استيراد أيقونات MUI (تأكد من تثبيت @mui/icons-material)
@@ -22,8 +23,8 @@ import EmailIcon from "@mui/icons-material/Email";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import { format, formatDistanceToNow } from "date-fns";
-import { useSelector } from "react-redux";
-import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Edit } from "@mui/icons-material";
 import GoogleIcon from "@mui/icons-material/Google";
@@ -31,14 +32,20 @@ import FacebookIcon from "@mui/icons-material/Facebook";
 import TwitterIcon from "@mui/icons-material/Twitter";
 import LockIcon from "@mui/icons-material/Lock";
 import LoadingPage from "../components/loading/loadingPage";
+import Swal from "sweetalert2";
+import { clearAuthUser } from "../Redux/authSlice";
+import { useSignOutMutation } from "../Redux/userApi";
 
 const Profile = () => {
-  const theme = useTheme()
+  const theme = useTheme();
   // @ts-ignore
   const authState = useSelector((state) => state.auth);
   const user = authState?.user; // <--- هنا بيانات المستخدم!
   const isLoadingAuth = authState?.isLoadingAuth; // حالة التحقق الأولي من المصادقة
-
+  const [triggerSignOut, { isLoading: isSigningOut }] = useSignOutMutation();
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const dispatch = useDispatch()
 
   // إذا لم يكن هناك مستخدم بعد التحميل وعدم وجود أخطاء
   const navigate = useNavigate();
@@ -58,9 +65,60 @@ const Profile = () => {
     twitter: <TwitterIcon />,
     local: <LockIcon color="secondary" />,
   };
-  if(isLoadingAuth){
-    return(<LoadingPage mode={theme.palette.mode}/>)
+  if (isLoadingAuth) {
+    return <LoadingPage mode={theme.palette.mode} />;
   }
+  const handleLogout = async () => {
+    try {
+      // استدعاء الـ mutation لتسجيل الخروج. .unwrap() يرمي خطأ إذا فشل الطلب
+      await triggerSignOut().unwrap();
+      dispatch(clearAuthUser()); // <--- مسح حالة المستخدم من Redux Store
+      navigate("/signin", { replace: true }); // <--- إعادة التوجيه إلى صفحة تسجيل الدخول
+    } catch (error) {
+      console.error("Error during logout:", error);
+      // يمكنك هنا إضافة منطق لعرض رسالة خطأ للمستخدم إذا فشل تسجيل الخروج
+    }}
+  const handleDelete = async () => {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    });
+    if (result.isConfirmed) {
+      setLoading(true);
+      // ✅ التحسين: استخدم التحقق مرة واحدة
+      if (!user || !user._id) {
+        throw new Error("User ID is missing.");
+      }
+      try {
+        const userId = user._id;
+        const response = await fetch(
+          `http://localhost:3000/api/deleteuser/${user && userId}`,
+          {
+            method: "delete",
+            credentials: "include",
+          }
+        );
+        if (response.ok) {
+          await Swal.fire("Deleted!", "user deleted successfully", "success");
+          handleLogout(); 
+        } else {
+          const errorData = await response.json();
+          throw new Error(errorData.message || "فشل الحذف.");
+        }
+      } catch (error) {
+        console.error("Deletion Failed:", error); // تسجيل الخطأ كاملاً
+        // عرض رسالة الخطأ للمستخدم
+        Swal.fire("Error", error.message || "فشل حذف الحساب.", "error");
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
   if (user) {
     return (
       <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
@@ -84,9 +142,14 @@ const Profile = () => {
             }}
           >
             <Avatar
-              sx={{ width: 100, height: 100, bgcolor: "primary.main", mb: 2 , objectFit: 'cover',}} // لضمان الملاءمة بدون تشويه }}
+              sx={{
+                width: 100,
+                height: 100,
+                bgcolor: "primary.main",
+                mb: 2,
+                objectFit: "cover",
+              }} // لضمان الملاءمة بدون تشويه }}
               alt={user ? user.fullName : ""}
-              
               src={
                 user
                   ? user.avatar
@@ -157,22 +220,22 @@ const Profile = () => {
               </>
             )}
           </List>
-            <Divider  />
-            <Divider  />
-            <Divider  />
-            <Divider sx={{ mb: 2,fontWeight:"bold" }} />
+          <Divider />
+          <Divider />
+          <Divider />
+          <Divider sx={{ mb: 2, fontWeight: "bold" }} />
           {/* قسم الحسابات المرتبطة */}
           <Box sx={{ width: "100%", mb: 4 }}>
             <Typography variant="h6" sx={{ mb: 2 }}>
               Linked Accounts
             </Typography>
-          
+
             {user.providers && user.providers.length > 0 ? (
-              <List >
+              <List>
                 {user.providers.map((provider) => (
                   <ListItem key={provider} disablePadding>
-                    <ListItemIcon >
-                      {providerIcons [provider.toLowerCase()] || <LockIcon />}
+                    <ListItemIcon>
+                      {providerIcons[provider.toLowerCase()] || <LockIcon />}
                     </ListItemIcon>
                     <ListItemText
                       primary={
@@ -193,14 +256,21 @@ const Profile = () => {
           </Box>
 
           {/* زر لإدارة الحسابات (اختياري) */}
+
           <Button
             variant="contained"
-            color="primary"
+            color="error"
             sx={{ mt: 2, py: 1.5, borderRadius: 2 }}
-            onClick={() => navigate("/account-settings")}
+            onClick={() => handleDelete()}
           >
-            Manage Accounts
+            {loading ? (
+              <CircularProgress size={20} sx={{ mr: 1 }} />
+            ) : (
+              "Delete Account"
+            )}
           </Button>
+
+          <Typography color="error">{error}</Typography>
         </Paper>
       </Container>
     );
