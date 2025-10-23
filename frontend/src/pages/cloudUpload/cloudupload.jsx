@@ -64,7 +64,7 @@ const CloudinarUploud = () => {
   //======================================= FETCHING PAGE DATA =================================================
 
   const getImages = useCallback(
-    async (pageNumber = currentPage,newSortOrder = sortOrder) => {
+    async (pageNumber = currentPage, newSortOrder = sortOrder) => {
       // ✅ التحقق المبكر
       if (!user || !user._id) {
         setImagesLoading(false);
@@ -266,6 +266,11 @@ const CloudinarUploud = () => {
       } catch (error) {
         console.error("Error during image upload:", error); // تغيير console.log إلى console.error
         // ... يمكنك هنا عرض الخطأ (error.message) للمستخدم في الواجهة
+        Swal.fire({
+          title: "failed to upload photos!",
+          text: error.message,
+          icon: "error",
+        });
       } finally {
         setSelectedManyFiles(null);
         setMultiLoading(false);
@@ -359,32 +364,61 @@ const CloudinarUploud = () => {
   };
 
   //=====================================download image =================================
-  const handledownload = (img) => {
+  const handledownload = async (img) => {
     const publicId = img.public_id;
+    const encodedPublicId = encodeURIComponent(publicId);
+    const backendDownloadRoute = `http://localhost:3000/api/download/${encodedPublicId}`;
     try {
-      const encodedPublicId = encodeURIComponent(publicId);
-      const backendDownloadRoute = `http://localhost:3000/api/download/${encodedPublicId}`;
-      window.open(backendDownloadRoute, "_blank");
-
-      Swal.fire("Ready!", "The image download will start shortly.", "info");
+      // 1. 🔍 إرسال الطلب في الخلفية للتأكد من نجاحه
+      const response = await fetch(backendDownloadRoute, {
+        method: "GET",
+        credentials: "include", // إذا كنت تستخدم الجلسات/الكوكي
+      });
+      if (response.ok) {
+        window.open(backendDownloadRoute, "_blank");
+        Swal.fire("Ready!", "The image download will start shortly.", "info");
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "فشل غير معروف في التحميل.");
+      }
+      // Swal.fire("Ready!", "The image download will start shortly.", "info");
     } catch (error) {
-      console.log(error);
+      Swal.fire({
+        title: "failed to download image!",
+        text: "failed to download photo, sorry ,try again later",
+        icon: "error",
+      });
     }
   };
   //============================= download all images ==========================
-  const handlwDownloadAll = () => {
+  const handlwDownloadAll = async () => {
     const encodedUserId = encodeURIComponent(user && user._id);
+    const backendDownloadRoute = `http://localhost:3000/api/downloadAll/${encodedUserId}`;
     try {
-      const backendDownloadRoute = `http://localhost:3000/api/downloadAll/${encodedUserId}`;
-      window.open(backendDownloadRoute, "_blank");
+      // 1. 🔍 إرسال الطلب في الخلفية للتأكد من نجاحه
+      const response = await fetch(backendDownloadRoute, {
+        method: "GET",
+        credentials: "include", // إذا كنت تستخدم الجلسات/الكوكي
+      });
+      if (response.ok) {
+        window.open(backendDownloadRoute, "_blank");
 
-      Swal.fire(
-        "gallery download",
-        "The ZIP file will be created and the download will start shortly. 💾",
-        "info"
-      );
+        Swal.fire(
+          "gallery download",
+          "The ZIP file will be created and the download will start shortly. 💾",
+          "info"
+        );
+      }else{
+        const errorData = await response.json();
+        throw new Error(errorData.message || "فشل غير معروف في التحميل.");
+      }
     } catch (error) {
       console.log(error);
+      Swal.fire({
+        title: "failed to download image!",
+        text: "failed to download photos, sorry ,try again later",
+        icon: "error",
+      });
     }
   };
 
