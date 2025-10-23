@@ -81,8 +81,8 @@ const Profile = () => {
   };
   const handleDeleteUser = async () => {
     const result = await Swal.fire({
-      title: "Are you sure?",
-      text: "You won't be able to revert this!",
+      title: "Are you sure?  ",
+      text: "you will lose all your data , and won't be able to revert this!",
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#3085d6",

@@ -10,6 +10,7 @@ import {
   Alert,
   CircularProgress,
   IconButton,
+  Tooltip,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -138,32 +139,46 @@ const EditProfile = () => {
     if (!user || !user._id) {
       throw new Error("User ID is missing.");
     }
-    console.log(userId);
-    setIsDeleting(true);
-    try {
-      const response = await fetch(
-        `http://localhost:3000/api/deleteprofilephoto/${userId}`,
-        {
-          method: "delete",
-          credentials: "include",
+    const result = await Swal.fire({
+      title: "Are you sure?  ",
+      text: "you won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    });
+    if (result.isConfirmed) {
+      setIsDeleting(true);
+      try {
+        const response = await fetch(
+          `http://localhost:3000/api/deleteprofilephoto/${userId}`,
+          {
+            method: "delete",
+            credentials: "include",
+          }
+        );
+        if (response.ok) {
+          const updatedUser = await response.json();
+          console.log(updatedUser.avatar);
+          await Swal.fire("Deleted!", "photo deleted successfully", "success");
+          setPreview(updatedUser.avatar);
+          refetch();
+        } else {
+          const errorData = await response.json();
+          throw new Error(errorData.message || "failed to delete account");
         }
-      );
-      if (response.ok) {
-        const updatedUser = await response.json();
-        console.log(updatedUser.avatar);
-        await Swal.fire("Deleted!", "photo deleted successfully", "success")
-            setPreview(updatedUser.avatar); 
-            refetch();
-      } else {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "failed to delete account");
+      } catch (error) {
+        console.error("Deletion Failed:", error); // تسجيل الخطأ كاملاً
+        // عرض رسالة الخطأ للمستخدم
+        Swal.fire(
+          "Error",
+          error.message || "failed to delete account",
+          "error"
+        );
+      } finally {
+        setIsDeleting(false);
       }
-    } catch (error) {
-      console.error("Deletion Failed:", error); // تسجيل الخطأ كاملاً
-      // عرض رسالة الخطأ للمستخدم
-      Swal.fire("Error", error.message || "failed to delete account", "error");
-    } finally {
-      setIsDeleting(false);
     }
   };
   if (userLoading) {
@@ -270,7 +285,7 @@ const EditProfile = () => {
                 <Box
                   sx={{
                     position: "absolute",
-                    top:17,
+                    top: 17,
                     right: -14,
                     display: "flex",
                     flexDirection: "column",
@@ -279,14 +294,18 @@ const EditProfile = () => {
                 >
                   {/* زر التعديل/الرفع (يفتح مربع اختيار الملف) */}
                   <label htmlFor="avatar-upload-input">
+                  <Tooltip title=" edit photo ">
                     <IconButton
                       component="span" // يجعله يعمل كزر لـ Label
                       color="secondary"
                       size="small"
-                      title=" edit photo"
+                      // title=" edit photo"
+                      
                     >
                       <Edit fontSize="small" />
                     </IconButton>
+                  </Tooltip>
+                    
                   </label>
 
                   {/* الحقل المخفي لاختيار الملف (ضروري لـ label) */}
@@ -318,7 +337,12 @@ const EditProfile = () => {
 
             {/* Buttons Section */}
             <Grid
-              sx={{ display: "flex", justifyContent: "space-between", gap: 2 ,flexDirection:{xs:"column",md:"row"}}}
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                gap: 2,
+                flexDirection: { xs: "column", md: "row" },
+              }}
             >
               <Button
                 type="submit"
@@ -327,8 +351,8 @@ const EditProfile = () => {
                 sx={{
                   flex: 1,
                   // py: 1.5,
-                  fontSize:"14px",
-                  textTransform:"lowerCase",
+                  fontSize: "14px",
+                  textTransform: "lowerCase",
                   borderRadius: 2,
                   boxShadow: 2,
                   "&:hover": { boxShadow: 4, backgroundColor: "#1565c0" },
@@ -343,8 +367,8 @@ const EditProfile = () => {
                 color="secondary"
                 sx={{
                   flex: 1,
-                  fontSize:"14px",
-                  textTransform:"lowerCase",
+                  fontSize: "14px",
+                  textTransform: "lowerCase",
                   // py: 1.5,
                   borderRadius: 2,
                   borderColor: "#d32f2f",

@@ -1,4 +1,11 @@
-import { Alert, Box, Button, IconButton, Paper, Typography } from "@mui/material";
+import {
+  Alert,
+  Box,
+  Button,
+  IconButton,
+  Paper,
+  Typography,
+} from "@mui/material";
 import { useEffect, useState } from "react";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -72,9 +79,14 @@ const Customers = () => {
     // إذا أكد المستخدم الحذف
     if (result.isConfirmed) {
       try {
-        await axios.delete(`http://localhost:3000/api/deletecustomer/${customerId}/${user && user._id}`, {
-          withCredentials: true,
-        });
+        await axios.delete(
+          `http://localhost:3000/api/deletecustomer/${customerId}/${
+            user && user._id
+          }`,
+          {
+            withCredentials: true,
+          }
+        );
         fetchcustomers();
         // عرض رسالة نجاح بعد الحذف
         Swal.fire("Deleted!", "The customer has been deleted.", "success");
@@ -101,9 +113,12 @@ const Customers = () => {
     // إذا أكد المستخدم الحذف
     if (result.isConfirmed) {
       try {
-        await axios.delete(`http://localhost:3000/api/deleteallcustomers/${user && user._id}`, {
-          withCredentials: true,
-        });
+        await axios.delete(
+          `http://localhost:3000/api/deleteallcustomers/${user && user._id}`,
+          {
+            withCredentials: true,
+          }
+        );
         fetchcustomers();
         // عرض رسالة نجاح بعد الحذف
         Swal.fire("Deleted!", "The customer has been deleted.", "success");
@@ -161,9 +176,16 @@ const Customers = () => {
         {" "}
         All Customers
       </Typography>
-      <Button onClick={()=>{
-        handledeleteAll()
-      }}>delete all</Button>
+      <Button
+        variant="contained"
+        color="error"
+        sx={{float:"right",mb:"20px",textTransform:"lowerCase"}}
+        onClick={() => {
+          handledeleteAll();
+        }}
+      >
+        delete all
+      </Button>
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }} aria-label="caption table">
           <caption>housam hegazy 2025</caption>
