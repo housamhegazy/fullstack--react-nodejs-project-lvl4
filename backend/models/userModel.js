@@ -1,5 +1,5 @@
 // models/User.js
-
+require("dotenv").config();
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs"); // لتشفير كلمات المرور
 
@@ -28,7 +28,7 @@ const UserSchema = new mongoose.Schema(
     providers: [{ type: String, enum: ['local', 'google', 'facebook', 'twitter'], default: ['local'] }], // مصفوفة للمزودين,
     avatar: {
       type: String,
-      default: 'https://res.cloudinary.com/your-cloud-name/image/upload/v1/default-avatar.png',
+      default: process.env.CLOUDINARY_DEFAULT_AVATAR_URL || 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
     },
     fullName: {
       type: String,

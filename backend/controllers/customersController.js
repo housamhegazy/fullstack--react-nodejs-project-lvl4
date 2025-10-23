@@ -14,8 +14,8 @@ const getCustomers = async (req, res) => {
 const getCustomerById = async (req, res) => {
   try {
     const customer = await CustomerModel.findOne({
-      _id: req.params.id,
-      owner: req.user.id,
+      _id: req.params.customerId,
+      owner: req.params.userId,
     }); // Fetch all users
     res.status(200).json(customer); // 200 OK
   } catch (error) {
@@ -37,13 +37,13 @@ const getCustomerInEditPage = async (req, res) => {
 
 const addNewCustomer = async (req, res) => {
   // 1. استخراج بيانات المستخدم من الطلب
-  const customerData = req.body;
+  const {customerData,userId} = req.body;
 
   // 2. دمج هوية المستخدم مع بيانات العميل
   // نفترض أن نموذج العميل يحتوي على حقل باسم 'owner' أو 'createdBy'
   const newUser = new CustomerModel({
     ...customerData,
-    owner: req.user.id, // نفترض أن التوكن يحتوي على { user: { id: '...' } }
+    owner: userId, // نفترض أن التوكن يحتوي على { user: { id: '...' } }
     // تأكد من أن الحقل الذي يخزن المالك موجود في نموذج CustomerModel
   });
   try {
@@ -83,7 +83,7 @@ const updateCustomer = async (req, res) => {
 const deleteCustomer = async (req, res) => {
   const customerId = req.params.customerId;
   const owner = req.params.userId;
-  console.log(owner);
+  console.log(customerId,owner);
   try {
     const customer = await CustomerModel.findOneAndDelete({
       _id: customerId,

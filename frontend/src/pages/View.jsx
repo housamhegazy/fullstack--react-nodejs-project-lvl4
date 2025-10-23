@@ -16,22 +16,21 @@ import { useGetUserProfileQuery } from '../Redux/userApi';
 function View() {
       const { data: user, isLoading, isSuccess } = useGetUserProfileQuery();
   
-  const {id} = useParams()
+  const {customerId} = useParams()
   const [customer, setcustomer] = useState(null); // State to store fetched customers
   const [loading, setLoading] = useState(true); // State for loading indicator
   const [error, setError] = useState(null); // State for error messages
 
   // Function to fetch all customers
   const fetchcustomer = async () => {
+    const userId = user._id
     setLoading(true);
     setError(null); // Clear previous errors
     try {
       const response = await axios.get(
-        `http://localhost:3000/api/allcustomers/${id}`,
+        `http://localhost:3000/api/allcustomers/${customerId}/${userId}`,
         {
-          headers: {
-            Authorization: `Bearer ${user.token}`, // إرسال التوكن في رأس الطلب
-          },
+          withCredentials:true
         }
       );
       setcustomer(response.data);
@@ -49,7 +48,7 @@ const navigate = useNavigate()
   // useEffect to call fetchcustomers when the component mounts
   useEffect(() => {
     // تأكد من وجود ID قبل محاولة الجلب
-    if (id) {
+    if (customerId) {
       fetchcustomer();
     } else {
       setLoading(false);
@@ -122,7 +121,7 @@ const navigate = useNavigate()
               User Details
             </Typography>
             <Typography variant="subtitle1" color="text.secondary">
-              ID: {id}
+              ID: {customerId}
             </Typography>
           </Box>
 

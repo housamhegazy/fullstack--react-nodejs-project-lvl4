@@ -86,7 +86,7 @@ function App() {
           HydrateFallback: FetchingdataLoader,
         },
         {
-          path: "view/:id",
+          path: "view/:customerId",
           Component: View,
           // loader: authLoader,
 

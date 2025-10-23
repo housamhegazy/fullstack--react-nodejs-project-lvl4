@@ -228,18 +228,17 @@ const country_list = [
 ];
 
 function AddCustomer() {
-    const navigate = useNavigate(); // تهيئة useNavigate
-    const { data: user, isLoading, isSuccess } = useGetUserProfileQuery();
+  const navigate = useNavigate(); // تهيئة useNavigate
+  const { data: user, isLoading, isSuccess } = useGetUserProfileQuery();
   useEffect(() => {
     if (!user && !isLoading) {
       navigate("/signin", { replace: true });
-      return
+      return;
     }
 
     if (isLoading) {
-      return
+      return;
     }
-  
   }, []);
   const [formData, setFormData] = useState({
     firstName: "",
@@ -309,14 +308,12 @@ function AddCustomer() {
     try {
       // إرسال البيانات إلى الـ backend
       await axios.post(
-        "http://localhost:3000/api/addcustomers",
-        formData,
-        // إضافة التوكن (بيانات المستخدم الحالي ) إلى رأس الطلب إذا كان موجودًا
-        user && user.token ? {
-          headers: {
-            Authorization: `Bearer ${user.token}`,
-          },
-        } : {}
+        `http://localhost:3000/api/addcustomers`,
+        {
+          customerData: formData,
+          userId: user._id,
+        },
+        { withCredentials: true }
       );
       setSuccess("User added successfully!");
       // مسح النموذج بعد الإضافة الناجحة
@@ -419,16 +416,19 @@ function AddCustomer() {
                 helperText={
                   !!error && !formData.firstName ? "first name required" : ""
                 }
-              
                 // التعديل المطلوب: تغيير لون الـ Label
                 InputLabelProps={{
-                    sx: {
-                        color: (theme) => theme.palette.mode === 'dark' ? '#ffffffff' : '#02083dff', // لون النص الافتراضي للـ Label (أزرق غامق)
-                        // يمكنك إضافة تغيير اللون عند التركيز هنا
-                        '&.Mui-focused': {
-                            color: (theme) => theme.palette.mode === 'dark' ? '#ffffffff' : '#02083dff', // لون النص عند التركيز
-                        },
+                  sx: {
+                    color: (theme) =>
+                      theme.palette.mode === "dark" ? "#ffffffff" : "#02083dff", // لون النص الافتراضي للـ Label (أزرق غامق)
+                    // يمكنك إضافة تغيير اللون عند التركيز هنا
+                    "&.Mui-focused": {
+                      color: (theme) =>
+                        theme.palette.mode === "dark"
+                          ? "#ffffffff"
+                          : "#02083dff", // لون النص عند التركيز
                     },
+                  },
                 }}
               />
             </Grid>
@@ -449,13 +449,17 @@ function AddCustomer() {
                 }
                 // التعديل المطلوب: تغيير لون الـ Label
                 InputLabelProps={{
-                    sx: {
-                        color: (theme) => theme.palette.mode === 'dark' ? '#ffffffff' : '#02083dff', // لون النص الافتراضي للـ Label (أزرق غامق)
-                        // يمكنك إضافة تغيير اللون عند التركيز هنا
-                        '&.Mui-focused': {
-                            color: (theme) => theme.palette.mode === 'dark' ? '#ffffffff' : '#02083dff', // لون النص عند التركيز
-                        },
+                  sx: {
+                    color: (theme) =>
+                      theme.palette.mode === "dark" ? "#ffffffff" : "#02083dff", // لون النص الافتراضي للـ Label (أزرق غامق)
+                    // يمكنك إضافة تغيير اللون عند التركيز هنا
+                    "&.Mui-focused": {
+                      color: (theme) =>
+                        theme.palette.mode === "dark"
+                          ? "#ffffffff"
+                          : "#02083dff", // لون النص عند التركيز
                     },
+                  },
                 }}
               />
             </Grid>
@@ -478,13 +482,17 @@ function AddCustomer() {
                 }
                 // التعديل المطلوب: تغيير لون الـ Label
                 InputLabelProps={{
-                    sx: {
-                        color: (theme) => theme.palette.mode === 'dark' ? '#ffffffff' : '#02083dff', // لون النص الافتراضي للـ Label (أزرق غامق)
-                        // يمكنك إضافة تغيير اللون عند التركيز هنا
-                        '&.Mui-focused': {
-                            color: (theme) => theme.palette.mode === 'dark' ? '#ffffffff' : '#02083dff', // لون النص عند التركيز
-                        },
+                  sx: {
+                    color: (theme) =>
+                      theme.palette.mode === "dark" ? "#ffffffff" : "#02083dff", // لون النص الافتراضي للـ Label (أزرق غامق)
+                    // يمكنك إضافة تغيير اللون عند التركيز هنا
+                    "&.Mui-focused": {
+                      color: (theme) =>
+                        theme.palette.mode === "dark"
+                          ? "#ffffffff"
+                          : "#02083dff", // لون النص عند التركيز
                     },
+                  },
                 }}
               />
             </Grid>
@@ -514,13 +522,17 @@ function AddCustomer() {
                 }
                 // التعديل المطلوب: تغيير لون الـ Label
                 InputLabelProps={{
-                    sx: {
-                        color: (theme) => theme.palette.mode === 'dark' ? '#ffffffff' : '#02083dff', // لون النص الافتراضي للـ Label (أزرق غامق)
-                        // يمكنك إضافة تغيير اللون عند التركيز هنا
-                        '&.Mui-focused': {
-                            color: (theme) => theme.palette.mode === 'dark' ? '#ffffffff' : '#02083dff', // لون النص عند التركيز
-                        },
+                  sx: {
+                    color: (theme) =>
+                      theme.palette.mode === "dark" ? "#ffffffff" : "#02083dff", // لون النص الافتراضي للـ Label (أزرق غامق)
+                    // يمكنك إضافة تغيير اللون عند التركيز هنا
+                    "&.Mui-focused": {
+                      color: (theme) =>
+                        theme.palette.mode === "dark"
+                          ? "#ffffffff"
+                          : "#02083dff", // لون النص عند التركيز
                     },
+                  },
                 }}
               />
             </Grid>
@@ -554,13 +566,17 @@ function AddCustomer() {
                 }
                 // التعديل المطلوب: تغيير لون الـ Label
                 InputLabelProps={{
-                    sx: {
-                        color: (theme) => theme.palette.mode === 'dark' ? '#ffffffff' : '#02083dff', // لون النص الافتراضي للـ Label (أزرق غامق)
-                        // يمكنك إضافة تغيير اللون عند التركيز هنا
-                        '&.Mui-focused': {
-                            color: (theme) => theme.palette.mode === 'dark' ? '#ffffffff' : '#02083dff', // لون النص عند التركيز
-                        },
+                  sx: {
+                    color: (theme) =>
+                      theme.palette.mode === "dark" ? "#ffffffff" : "#02083dff", // لون النص الافتراضي للـ Label (أزرق غامق)
+                    // يمكنك إضافة تغيير اللون عند التركيز هنا
+                    "&.Mui-focused": {
+                      color: (theme) =>
+                        theme.palette.mode === "dark"
+                          ? "#ffffffff"
+                          : "#02083dff", // لون النص عند التركيز
                     },
+                  },
                 }}
               />
             </Grid>

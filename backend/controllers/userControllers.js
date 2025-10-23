@@ -1,5 +1,6 @@
 const express = require("express");
 const User = require("../models/userModel");
+require("dotenv").config();
 // ********************** تعريف دالة handleError هنا **********************
 const { handleError } = require("../utils/errorMiddleware");
 //======================================= edite profile pic ==========================
@@ -153,10 +154,17 @@ const deleteProfilePhoto = async (req, res) => {
     await processDeleteProfilePhoto(userId);
     // ⭐️ بعد الحذف من Cloudinary، يجب تحديث سجل المستخدم في MongoDB
     await User.findByIdAndUpdate(userId, {
-      avatar: "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png", // تعيين الصورة الافتراضية
+      avatar:
+        process.env.CLOUDINARY_DEFAULT_AVATAR_URL ||
+        "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png", // تعيين الصورة الافتراضية
     });
-    const user = await User.findById(userId)
-    res.status(200).json({ message: "Profile picture deleted successfully.",avatar:user.avatar});
+    const user = await User.findById(userId);
+    res
+      .status(200)
+      .json({
+        message: "Profile picture deleted successfully.",
+        avatar: user.avatar,
+      });
   } catch (error) {
     return handleError(res, error);
   }

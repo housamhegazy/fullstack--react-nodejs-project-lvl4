@@ -7,23 +7,21 @@ const {handleError} = require("../utils/errorMiddleware");
 
 
 //search function
-router.get("/api/search", async (req, res) => {
+router.get("/api/search/:userId", async (req, res) => {
   try {
     const searchValue = req.query.svalue;
-    if (!searchValue) {
+    if (!searchValue || searchValue.trim() === "") {
       // 2. إذا لم يتم تقديم قيمة للبحث، يمكنك إما:
       //    أ. إرجاع جميع المستخدمين (إذا كان هذا هو السلوك المطلوب لصفحة البحث الفارغة)
       //    ب. إرجاع مصفوفة فارغة أو رسالة تفيد بعدم وجود استعلام
       // const allUsers = await CustomerModel.find({});
       // return res.status(200).json(allUsers);
       // أو:
-      return res
-        .status(200)
-        .json({ message: "Please provide a search query." });
+    return res.status(200).json([])
     }
     const customer = await CustomerModel.find({
       $and: [
-        { owner: req.user.id }, // شرط الملكية: يجب أن يكون المالك هو المستخدم الحالي
+        { owner: req.params.userId }, // شرط الملكية: يجب أن يكون المالك هو المستخدم الحالي
         {
           $or: [
             { firstName: { $regex: searchValue, $options: "i" } },

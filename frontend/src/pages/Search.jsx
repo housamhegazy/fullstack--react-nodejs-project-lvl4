@@ -44,13 +44,14 @@ function Search() {
     setLoading(true);
     setError(null);
     try {
+      const userId = user._id
       // إذا لم يكن هناك searchTerm، Backend الخاص بك سيعالج ذلك (إرجاع الكل أو لا شيء)
       const response = await axios.get(
-        `http://localhost:3000/api/search?svalue=${encodeURIComponent(
+        `http://localhost:3000/api/search/${userId}?svalue=${encodeURIComponent(
           searchTerm || ""
         )}`,
         {
-          headers: { Authorization: `Bearer ${user.token}` },
+          withCredentials:true,
         }
       );
       // <--- التحقق هنا مما إذا كانت الاستجابة تحتوي على 'message'

@@ -1,12 +1,16 @@
 const ImageModel = require("../models/galleryModel");
 const { cloudinary, streamUpload } = require("../config/cloudinaryConfig");
 const archiver = require("archiver"); // 1. استيراد archiver
+require("dotenv").config();
 const axios = require("axios"); // استيراد axios
 // ********************** تعريف دالة handleError هنا **********************
 const { handleError } = require("../utils/errorMiddleware");
 // to compresse photos before upload
 const sharp = require("sharp");
-
+// ⭐️ جلب المسار الأساسي من متغيرات البيئة
+const GALLERY_BASE_PATH = process.env.CLOUDINARY_GALLERY_FOLDER;
+// التحقق للتأكد من وجود قيمة افتراضية في حالة عدم تحميل المتغير
+const baseFolder = GALLERY_BASE_PATH || 'mernstack/gallery';
 const uploadImage = async (req, res) => {
   if (!req.file) {
     console.error("File missing in request.");
@@ -27,7 +31,7 @@ const uploadImage = async (req, res) => {
     //=================== upload to cloudinary ========================================
     const uniquePublicId = `${userId}-${Date.now()}`;
     const result = await streamUpload(processedBuffer, {
-      folder: `mernstack/gallery/${userId}`, // sort folders in cloudinary based on userId
+      folder: `${baseFolder}/${userId}`, // sort folders in cloudinary based on userId
       // public_id: userId, //  هذا هو اسم الصوره ويضمن عند رفع صوره يقوم بحذف القديمه ومن الممكن تغييره الى دالة الوقت لرفع كل صوره باسم مختلف والاحتفاظ بكل الصور
       public_id: uniquePublicId,
       upload_preset: "gallery_preset", // cloudinary settings لازم تكتب نفس الاسم ده في الكلاوديناري
@@ -79,7 +83,7 @@ const uploadmanyImages = async (req, res) => {
         .toBuffer();
       // ============== رفع الصورة إلى Cloudinary ==================================
       const result = await streamUpload(processedBuffer, {
-        folder: `mernstack/gallery/${userId}`, // مجلد مخصص لكل مستخدم
+        folder: `${baseFolder}/${userId}`, // مجلد مخصص لكل مستخدم
         public_id: uniquePublicId,
         upload_preset: "gallery_preset",
       });
@@ -128,7 +132,13 @@ const getImages = async (req, res) => {
     const totalImages = await ImageModel.countDocuments(filter);
     // التحقق من عدم وجود صور قبل الجلب لتجنب العمل غير الضروري
     if (totalImages === 0 && page === 1) {
-      return res.status(404).json({ message: "No Photos for this User" });
+      return res.status(200).json({ 
+                message: "No Photos for this User",
+                images: [], // ⭐️ إرجاع مصفوفة فارغة
+                currentPage: 1,
+                totalPages: 0,
+                totalImages: 0
+            });
     }
 
     // ⭐️ الخطوة 2: استعلام موحد يطبق الفرز والتقسيم
@@ -175,7 +185,7 @@ const deleteImage = async (req, res) => {
 
 // نقوم بفصل فانكشن الحذف عن الكونترولر الخاص به حتى يمكننا استخدام الفانكشن في اماكن اخرى
 const processDeleteAllImages = async (ownerId) => {
-  const folderPath = `mernstack/gallery/${ownerId}`;
+  const folderPath = `${baseFolder}/${ownerId}`;
   try {
     // 1. حذف الأصول من Cloudinary
     await cloudinary.api.delete_resources_by_prefix(folderPath, {
@@ -275,7 +285,7 @@ const downloadImage = async (req, res) => {
 const downloadAll = async (req, res) => {
   const userId = req.params.userId;
   // المسار في Cloudinary الذي يحتوي على جميع صور المستخدم
-  const folderPath = `mernstack/gallery/${userId}`;
+  const folderPath = `${baseFolder}/${userId}`;
   try {
     // 1. جلب جميع الصور للمستخدم من قاعدة البيانات
     const images = await ImageModel.find({ owner: userId }).select("public_id");

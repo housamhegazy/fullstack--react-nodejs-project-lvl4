@@ -347,7 +347,9 @@ function Edite() {
         `http://localhost:3000/api/editcustomer/${id}`,
         customer,
         {
-          headers: { Authorization: `Bearer ${user.token}` },
+          
+            withCredentials: true,
+          
         }
       );
       setLoadingEdit(false);
@@ -395,8 +397,10 @@ function Edite() {
       setDatatError(null);
       setSuccess(null);
       try {
-        await axios.delete(`http://localhost:3000/api/allcustomers/${id}`, {
-          headers: { Authorization: `Bearer ${user.token}` },
+        await axios.delete(`http://localhost:3000/api/deletecustomer/${customer._id}/${user._id}`, {
+          
+            withCredentials: true,
+          
         });
         // عرض رسالة نجاح بعد الحذف
         Swal.fire("Deleted!", "The customer has been deleted.", "success");
