@@ -1,10 +1,4 @@
-import {
-  Alert,
-  Box,
-  IconButton,
-  Paper,
-  Typography,
-} from "@mui/material";
+import { Alert, Box, Button, IconButton, Paper, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -20,11 +14,12 @@ import { useGetUserProfileQuery } from "../Redux/userApi";
 import LoadingPage from "../components/loading/loadingPage";
 const Customers = () => {
   const localTheme = localStorage.getItem("localTheme");
-const defaultMode = localTheme === null ? "light" : localTheme === "light" ? "light" : "dark";
+  const defaultMode =
+    localTheme === null ? "light" : localTheme === "light" ? "light" : "dark";
   //احضرت بيانات المستخدم حتى يتم ارسالها عند طلب عرض بيانات العملاء
   const { data: user, isLoading, isSuccess } = useGetUserProfileQuery();
-      // const userData = useLoaderData(); 
-      // const isAuthenticated = useSelector(state => state.auth.isAuthenticated);
+  // const userData = useLoaderData();
+  // const isAuthenticated = useSelector(state => state.auth.isAuthenticated);
 
   const navigate = useNavigate();
   const [customers, setcustomers] = useState([]); // State to store fetched customers
@@ -37,10 +32,12 @@ const defaultMode = localTheme === null ? "light" : localTheme === "light" ? "li
     setError(null); // Clear previous errors
     try {
       const response = await axios.get(
-        "http://localhost:3000/api/allcustomers",{ headers: {
-          Authorization: `Bearer ${user.token}`, // إرسال التوكن في رأس الطلب
-        },
-      }
+        "http://localhost:3000/api/allcustomers",
+        {
+          headers: {
+            Authorization: `Bearer ${user.token}`, // إرسال التوكن في رأس الطلب
+          },
+        }
       );
       setcustomers(response.data);
     } catch (err) {
@@ -54,13 +51,13 @@ const defaultMode = localTheme === null ? "light" : localTheme === "light" ? "li
   // useEffect to call fetchcustomers when the component mounts
   useEffect(() => {
     if (!user && !isLoading) {
-            navigate('/signin', { replace: true });
-        }
+      navigate("/signin", { replace: true });
+    }
     fetchcustomers();
   }, []); // Empty dependency array means this runs once on mount
 
   // delete function
-  const deleteFunc = async (id) => {
+  const deleteFunc = async (customerId) => {
     // عرض رسالة التأكيد من SweetAlert2
     const result = await Swal.fire({
       title: "Are you sure?", // عنوان الرسالة
@@ -75,12 +72,9 @@ const defaultMode = localTheme === null ? "light" : localTheme === "light" ? "li
     // إذا أكد المستخدم الحذف
     if (result.isConfirmed) {
       try {
-        await axios.delete(
-          `http://localhost:3000/api/allcustomers/${id}`,{ headers: {
-            Authorization: `Bearer ${user.token}`, // إرسال التوكن في رأس الطلب
-          },  
-        }
-        );
+        await axios.delete(`http://localhost:3000/api/deletecustomer/${customerId}/${user && user._id}`, {
+          withCredentials: true,
+        });
         fetchcustomers();
         // عرض رسالة نجاح بعد الحذف
         Swal.fire("Deleted!", "The customer has been deleted.", "success");
@@ -92,7 +86,35 @@ const defaultMode = localTheme === null ? "light" : localTheme === "light" ? "li
       }
     }
   };
+  const handledeleteAll = async (customerId) => {
+    // عرض رسالة التأكيد من SweetAlert2
+    const result = await Swal.fire({
+      title: "Are you sure?", // عنوان الرسالة
+      text: "You won't be able to revert this!", // نص الرسالة
+      icon: "warning", // أيقونة التحذير
+      showCancelButton: true, // إظهار زر الإلغاء
+      confirmButtonColor: "#d33", // لون الزر "نعم، احذف!" (أحمر)
+      cancelButtonColor: "#3085d6", // لون الزر "إلغاء" (أزرق)
+      confirmButtonText: "Yes, delete it!", // نص الزر "نعم، احذف!"
+    });
 
+    // إذا أكد المستخدم الحذف
+    if (result.isConfirmed) {
+      try {
+        await axios.delete(`http://localhost:3000/api/deleteallcustomers/${user && user._id}`, {
+          withCredentials: true,
+        });
+        fetchcustomers();
+        // عرض رسالة نجاح بعد الحذف
+        Swal.fire("Deleted!", "The customer has been deleted.", "success");
+      } catch (err) {
+        console.error("Failed to delete customer:", err);
+        setError("Failed to delete customer. Please try again later.");
+      } finally {
+        console.log("done");
+      }
+    }
+  };
 
   if (error) {
     return (
@@ -108,12 +130,14 @@ const defaultMode = localTheme === null ? "light" : localTheme === "light" ? "li
       </Box>
     );
   }
-if(loading){
-  return(<>
-    <LoadingPage mode={defaultMode}/>
-  </>)
-}
-  if(customers.length < 1){
+  if (loading) {
+    return (
+      <>
+        <LoadingPage mode={defaultMode} />
+      </>
+    );
+  }
+  if (customers.length < 1) {
     return (
       <Typography
         sx={{ textAlign: "center" }}
@@ -122,9 +146,9 @@ if(loading){
         color="inherit"
       >
         {" "}
-        No Customers Yet , Add New from <Link to={"./AddCustomer"}>Here</Link> 
+        No Customers Yet , Add New from <Link to={"./AddCustomer"}>Here</Link>
       </Typography>
-    )
+    );
   }
   return (
     <Box>
@@ -135,8 +159,11 @@ if(loading){
         color="inherit"
       >
         {" "}
-        All Customers 
+        All Customers
       </Typography>
+      <Button onClick={()=>{
+        handledeleteAll()
+      }}>delete all</Button>
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }} aria-label="caption table">
           <caption>housam hegazy 2025</caption>

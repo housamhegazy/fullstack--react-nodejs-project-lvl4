@@ -1,6 +1,6 @@
 const CustomerModel = require("../models/customesSchema"); // استيراد نموذج المستخدم
 // ********************** تعريف دالة handleError هنا **********************
-const {handleError} = require("../utils/errorMiddleware");
+const { handleError } = require("../utils/errorMiddleware");
 // **************************************************************************
 const getCustomers = async (req, res) => {
   try {
@@ -81,12 +81,28 @@ const updateCustomer = async (req, res) => {
 };
 
 const deleteCustomer = async (req, res) => {
+  const customerId = req.params.customerId;
+  const owner = req.params.userId;
+  console.log(owner);
   try {
     const customer = await CustomerModel.findOneAndDelete({
-      _id: req.params.id,
-      owner: req.user.id,
+      _id: customerId,
+      owner: owner,
     }); // Fetch all users
     res.status(200).json(customer); // 200 OK
+  } catch (error) {
+    return handleError(res, error);
+  }
+};
+
+const processdeleteAllCustomers = async (userId) => {
+  const deletedcustomers = await CustomerModel.deleteMany({ owner: userId });
+};
+const deleteAllCustomers = async (req, res) => {
+  const userId = req.params.userId;
+  try {
+    await processdeleteAllCustomers(userId);
+    res.status(200).json({ message: "customers deleted succesfully" }); // 200 OK
   } catch (error) {
     return handleError(res, error);
   }
@@ -98,4 +114,6 @@ module.exports = {
   addNewCustomer,
   updateCustomer,
   deleteCustomer,
+  processdeleteAllCustomers,
+  deleteAllCustomers,
 };

@@ -1,7 +1,15 @@
 const express = require("express");
 const router = express.Router();
 //==================== import controllers =========================
-const {getCustomers ,getCustomerById,getCustomerInEditPage,addNewCustomer,updateCustomer,deleteCustomer} = require("../controllers/customersController")
+const {
+  getCustomers,
+  getCustomerById,
+  getCustomerInEditPage,
+  addNewCustomer,
+  updateCustomer,
+  deleteCustomer,
+  deleteAllCustomers
+} = require("../controllers/customersController");
 // 2. Route to Get All Users (GET)
 router.get("/api/allcustomers", getCustomers);
 // 3. Route to Get one User (GET)
@@ -14,5 +22,6 @@ router.post("/api/addcustomers", addNewCustomer);
 router.put("/api/editcustomer/:id", updateCustomer);
 
 //6-delete function
-router.delete("/api/allcustomers/:id", deleteCustomer);
+router.delete("/api/deletecustomer/:customerId/:userId", deleteCustomer);
+router.delete("/api/deleteallcustomers/:userId", deleteAllCustomers);
 module.exports = router;

@@ -5,7 +5,7 @@ const router = express.Router();
 const User = require('../../models/userModel');
 const crypto = require('crypto');
 
-const {handleError} = require("../utils/errorMiddleware");
+const {handleError} = require("../../utils/errorMiddleware");
 
 // مسار GET: للتحقق من صلاحية الرمز المميز (Token)
 router.get('/:token', async (req, res) => {

@@ -45,7 +45,7 @@ const Profile = () => {
   const [triggerSignOut, { isLoading: isSigningOut }] = useSignOutMutation();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
 
   // إذا لم يكن هناك مستخدم بعد التحميل وعدم وجود أخطاء
   const navigate = useNavigate();
@@ -77,8 +77,9 @@ const Profile = () => {
     } catch (error) {
       console.error("Error during logout:", error);
       // يمكنك هنا إضافة منطق لعرض رسالة خطأ للمستخدم إذا فشل تسجيل الخروج
-    }}
-  const handleDelete = async () => {
+    }
+  };
+  const handleDeleteUser = async () => {
     const result = await Swal.fire({
       title: "Are you sure?",
       text: "You won't be able to revert this!",
@@ -105,7 +106,7 @@ const Profile = () => {
         );
         if (response.ok) {
           await Swal.fire("Deleted!", "user deleted successfully", "success");
-          handleLogout(); 
+          handleLogout();
         } else {
           const errorData = await response.json();
           throw new Error(errorData.message || "فشل الحذف.");
@@ -119,6 +120,7 @@ const Profile = () => {
       }
     }
   };
+
   if (user) {
     return (
       <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
@@ -261,7 +263,7 @@ const Profile = () => {
             variant="contained"
             color="error"
             sx={{ mt: 2, py: 1.5, borderRadius: 2 }}
-            onClick={() => handleDelete()}
+            onClick={() => handleDeleteUser()}
           >
             {loading ? (
               <CircularProgress size={20} sx={{ mr: 1 }} />

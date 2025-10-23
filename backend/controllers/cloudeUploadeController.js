@@ -3,7 +3,7 @@ const { cloudinary, streamUpload } = require("../config/cloudinaryConfig");
 const archiver = require("archiver"); // 1. استيراد archiver
 const axios = require("axios"); // استيراد axios
 // ********************** تعريف دالة handleError هنا **********************
-const {handleError} = require("../utils/errorMiddleware");
+const { handleError } = require("../utils/errorMiddleware");
 // to compresse photos before upload
 const sharp = require("sharp");
 
@@ -124,13 +124,11 @@ const getImages = async (req, res) => {
 
   let filter = { owner: userId };
   try {
-    // اولا نحسب اجمالي عدد الصور 
+    // اولا نحسب اجمالي عدد الصور
     const totalImages = await ImageModel.countDocuments(filter);
     // التحقق من عدم وجود صور قبل الجلب لتجنب العمل غير الضروري
     if (totalImages === 0 && page === 1) {
-      return res
-        .status(404)
-        .json({ message: "No Photos for this User" });
+      return res.status(404).json({ message: "No Photos for this User" });
     }
 
     // ⭐️ الخطوة 2: استعلام موحد يطبق الفرز والتقسيم
@@ -175,31 +173,47 @@ const deleteImage = async (req, res) => {
   }
 };
 
+// نقوم بفصل فانكشن الحذف عن الكونترولر الخاص به حتى يمكننا استخدام الفانكشن في اماكن اخرى
+const processDeleteAllImages = async (ownerId) => {
+  const folderPath = `mernstack/gallery/${ownerId}`;
+  try {
+    // 1. حذف الأصول من Cloudinary
+    await cloudinary.api.delete_resources_by_prefix(folderPath, {
+      resource_type: "image",
+    });
+    try {
+      // 2. حذف المجلد نفسه
+      await cloudinary.api.delete_folder(folderPath);
+    } catch (folderError) {
+      // Cloudinary ترجع عادةً http_code 404 إذا لم يتم العثور على المجلد
+      if (folderError.http_code !== 404) {
+        // إذا كان الخطأ شيئًا آخر غير 404، أعد رمي الخطأ.
+        throw folderError;
+      }
+      // إذا كان 404 (المجلد غير موجود)، تجاهل الخطأ واستمر.
+      console.warn(
+        `Gallery folder not found for user ${ownerId}. Continuing deletion.`
+      );
+    }
+
+    // 3. الحذف من MongoDB
+    const deletedImages = await ImageModel.deleteMany({ owner: ownerId });
+
+    return { dbCount: deletedImages.deletedCount };
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 const deleteAllImages = async (req, res) => {
   const owner = req.params.owner; // (user._id)
-  // المسار في Cloudinary الذي يحتوي على جميع صور المستخدم
-  const folderPath = `mernstack/gallery/${owner}`;
+
   try {
-    // 2. ✅ الحذف من Cloudinary
-    const cloudinaryResponse = await cloudinary.api.delete_resources_by_prefix(
-      folderPath,
-      { resource_type: "image" }
-    );
-    const deletedImages = await ImageModel.deleteMany({ owner: owner });
-    // يمكننا التحقق من عدد الصور المحذوفة: deletedImages.deletedCount
-    if (
-      deletedImages.deletedCount === 0 &&
-      cloudinaryResponse.deleted.length === 0
-    ) {
-      return res
-        .status(404)
-        .json({ message: "لا توجد صور لحذفها لهذا المستخدم." });
-    }
+    const result = await processDeleteAllImages(owner);
 
     res.status(200).json({
       message: "✅ تم حذف جميع الصور من Cloudinary وقاعدة البيانات بنجاح.",
-      dbResult: deletedImages.deletedCount,
-      cloudinaryResult: cloudinaryResponse,
+      dbResult: result.dbCount,
     });
   } catch (error) {
     return handleError(res, error);
@@ -319,6 +333,7 @@ module.exports = {
   uploadImage,
   getImages,
   deleteImage,
+  processDeleteAllImages,
   deleteAllImages,
   uploadmanyImages,
   downloadImage,

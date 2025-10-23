@@ -9,11 +9,13 @@ import {
   Grid,
   Alert,
   CircularProgress,
+  IconButton,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useGetUserProfileQuery } from "../Redux/userApi"; // Your RTK Query hook
 import Swal from "sweetalert2";
+import { DeleteForever, Edit } from "@mui/icons-material";
 
 const EditProfile = () => {
   const navigate = useNavigate();
@@ -31,6 +33,8 @@ const EditProfile = () => {
   const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  // نفترض أن لديك متغير لحالة التحميل
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Populate form with current user data
   useEffect(() => {
@@ -129,7 +133,39 @@ const EditProfile = () => {
       }
     }
   };
-
+  const handleDeleteProfilePhoto = async () => {
+    const userId = user._id;
+    if (!user || !user._id) {
+      throw new Error("User ID is missing.");
+    }
+    console.log(userId);
+    setIsDeleting(true);
+    try {
+      const response = await fetch(
+        `http://localhost:3000/api/deleteprofilephoto/${userId}`,
+        {
+          method: "delete",
+          credentials: "include",
+        }
+      );
+      if (response.ok) {
+        const updatedUser = await response.json();
+        console.log(updatedUser.avatar);
+        await Swal.fire("Deleted!", "photo deleted successfully", "success")
+            setPreview(updatedUser.avatar); 
+            refetch();
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "failed to delete account");
+      }
+    } catch (error) {
+      console.error("Deletion Failed:", error); // تسجيل الخطأ كاملاً
+      // عرض رسالة الخطأ للمستخدم
+      Swal.fire("Error", error.message || "failed to delete account", "error");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
   if (userLoading) {
     return <CircularProgress />;
   }
@@ -214,42 +250,75 @@ const EditProfile = () => {
 
             {/* Upload Section */}
             <Grid sx={{ textAlign: "center", mb: 2 }}>
-              <input
-                accept="image/*"
-                style={{ display: "none" }}
-                id="avatar-upload"
-                type="file"
-                onChange={handleFileChange}
-              />
-              <label htmlFor="avatar-upload">
-                <Button
-                  variant="outlined"
-                  component="span"
+              <Box
+                sx={{
+                  position: "relative",
+                  width: 120, // عرض يكفي للصورة + الأزرار
+                  height: 120, // ارتفاع يكفي للصورة
+                  mx: "auto",
+                  mb: 3,
+                }}
+              >
+                {/* 1. الصورة الشخصية الحالية أو المعاينة */}
+                <Avatar
+                  // استخدم الصورة الموجودة في الـ 'user' أو 'preview' إذا كان يتم الرفع
+                  src={preview || user?.avatar || "path/to/default/avatar.png"}
+                  sx={{ width: 100, height: 100, mx: "auto" }}
+                />
+
+                {/* 2. حاوية الأزرار في موضع مطلق */}
+                <Box
                   sx={{
-                    borderColor: "#1976d2",
-                    color: "#1976d2",
-                    "&:hover": {
-                      borderColor: "#1565c0",
-                      backgroundColor: "rgba(25, 118, 210, 0.1)",
-                    },
+                    position: "absolute",
+                    top:17,
+                    right: -14,
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 0.5,
                   }}
                 >
-                  Upload Profile Picture
-                </Button>
-              </label>
-              {preview && (
-                <Box sx={{ mt: 2, textAlign: "center" }}>
-                  <Avatar
-                    src={preview}
-                    sx={{ width: 100, height: 100, mx: "auto" }}
+                  {/* زر التعديل/الرفع (يفتح مربع اختيار الملف) */}
+                  <label htmlFor="avatar-upload-input">
+                    <IconButton
+                      component="span" // يجعله يعمل كزر لـ Label
+                      color="secondary"
+                      size="small"
+                      title=" edit photo"
+                    >
+                      <Edit fontSize="small" />
+                    </IconButton>
+                  </label>
+
+                  {/* الحقل المخفي لاختيار الملف (ضروري لـ label) */}
+                  <input
+                    accept="image/*"
+                    id="avatar-upload-input"
+                    type="file"
+                    style={{ display: "none" }}
+                    onChange={handleFileChange} // ربط بدالة اختيار الملف
                   />
+
+                  {/* زر الحذف */}
+                  <IconButton
+                    color="error"
+                    size="small"
+                    title=" remove profile photo"
+                    onClick={handleDeleteProfilePhoto} // ربط بدالة الحذف
+                    disabled={
+                      isDeleting ||
+                      !user?.avatar ||
+                      user?.avatar.includes("default")
+                    } // تعطيل إذا كانت افتراضية
+                  >
+                    <DeleteForever fontSize="small" />
+                  </IconButton>
                 </Box>
-              )}
+              </Box>
             </Grid>
 
             {/* Buttons Section */}
             <Grid
-              sx={{ display: "flex", justifyContent: "space-between", gap: 2 }}
+              sx={{ display: "flex", justifyContent: "space-between", gap: 2 ,flexDirection:{xs:"column",md:"row"}}}
             >
               <Button
                 type="submit"
@@ -257,7 +326,9 @@ const EditProfile = () => {
                 color="primary"
                 sx={{
                   flex: 1,
-                  py: 1.5,
+                  // py: 1.5,
+                  fontSize:"14px",
+                  textTransform:"lowerCase",
                   borderRadius: 2,
                   boxShadow: 2,
                   "&:hover": { boxShadow: 4, backgroundColor: "#1565c0" },
@@ -272,7 +343,9 @@ const EditProfile = () => {
                 color="secondary"
                 sx={{
                   flex: 1,
-                  py: 1.5,
+                  fontSize:"14px",
+                  textTransform:"lowerCase",
+                  // py: 1.5,
                   borderRadius: 2,
                   borderColor: "#d32f2f",
                   color: "#d32f2f",
