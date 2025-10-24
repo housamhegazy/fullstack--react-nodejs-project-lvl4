@@ -307,8 +307,8 @@ const CloudUploadView = ({
         <>
           {/* delete all btn menu  */}
           {allImgs?.length > 0 && (
-//======================== box of two menu download - delete all - sorting ================================
-            <Box sx={{display:"flex",justifyContent:"space-between"}}>
+            //======================== box of two menu download - delete all - sorting ================================
+            <Box sx={{ display: "flex", justifyContent: "space-between" }}>
               <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
                 {/* 1. الزر الذي يفتح القائمة المنسدلة */}
                 <Button

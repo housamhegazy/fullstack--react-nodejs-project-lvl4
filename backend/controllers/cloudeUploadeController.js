@@ -10,7 +10,7 @@ const sharp = require("sharp");
 // ⭐️ جلب المسار الأساسي من متغيرات البيئة
 const GALLERY_BASE_PATH = process.env.CLOUDINARY_GALLERY_FOLDER;
 // التحقق للتأكد من وجود قيمة افتراضية في حالة عدم تحميل المتغير
-const baseFolder = GALLERY_BASE_PATH || 'mernstack/gallery';
+const baseFolder = GALLERY_BASE_PATH || "mernstack/gallery";
 const uploadImage = async (req, res) => {
   if (!req.file) {
     console.error("File missing in request.");
@@ -132,13 +132,13 @@ const getImages = async (req, res) => {
     const totalImages = await ImageModel.countDocuments(filter);
     // التحقق من عدم وجود صور قبل الجلب لتجنب العمل غير الضروري
     if (totalImages === 0 && page === 1) {
-      return res.status(200).json({ 
-                message: "No Photos for this User",
-                images: [], // ⭐️ إرجاع مصفوفة فارغة
-                currentPage: 1,
-                totalPages: 0,
-                totalImages: 0
-            });
+      return res.status(200).json({
+        message: "No Photos for this User",
+        images: [], // ⭐️ إرجاع مصفوفة فارغة
+        currentPage: 1,
+        totalPages: 0,
+        totalImages: 0,
+      });
     }
 
     // ⭐️ الخطوة 2: استعلام موحد يطبق الفرز والتقسيم
