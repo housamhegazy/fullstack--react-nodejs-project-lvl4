@@ -10,7 +10,7 @@ import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom';
 import { format, formatDistanceToNow } from 'date-fns'; // لاستخدام تنسيق التاريخ
 import axios from 'axios'; 
-import { useGetUserProfileQuery } from '../Redux/userApi';
+import { useGetUserProfileQuery } from '../../Redux/userApi';
 
 
 function View() {

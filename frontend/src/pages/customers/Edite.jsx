@@ -18,7 +18,7 @@ import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import { Link as RouterLink, useNavigate, useParams } from "react-router-dom"; // لتجنب إعادة تحميل الصفحة للروابط
 import axios from "axios";
 import Swal from "sweetalert2";
-import { useGetUserProfileQuery } from "../Redux/userApi";
+import { useGetUserProfileQuery } from "../../Redux/userApi";
 
 // قائمة الدول (ثابتة للعرض)
 const country_list = [

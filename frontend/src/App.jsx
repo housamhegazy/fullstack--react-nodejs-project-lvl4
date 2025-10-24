@@ -1,10 +1,10 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Profile from "./pages/Profile";
-import Customers from "./pages/Customers";
-import Edite from "./pages/Edite";
-import Search from "./pages/Search";
-import View from "./pages/View";
-import AddCustomer from "./pages/AddCustomer";
+import Customers from "./pages/customers/Customers";
+import Edite from "./pages/customers/Edite";
+import Search from "./pages/customers/Search";
+import View from "./pages/customers/View";
+import AddCustomer from "./pages/customers/AddCustomer";
 import Root from "./Root";
 import Err_404Page from "./pages/Err_404Page";
 import Signin from "./pages/signin";
@@ -16,7 +16,6 @@ axios.defaults.withCredentials = true;
 import { useDispatch } from "react-redux";
 import { setLoadingAuth, setAuthUser, clearAuthUser } from "./Redux/authSlice";
 import { useGetUserProfileQuery } from "./Redux/userApi";
-
 import LoadingPage from "./components/loading/loadingPage";
 import FetchingdataLoader from "./components/loading/fetchingData";
 import ResetPassword from "./pages/reset-password/resetPassword";
@@ -56,7 +55,7 @@ function App() {
     {
       path: "/",
       Component: Root,
-      errorElement: <Err_404Page />, // ✳️ هنا بس مرة واحدة
+      errorElement: <Err_404Page />, 
       children: [
         {
           index: true,

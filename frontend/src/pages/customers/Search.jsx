@@ -20,7 +20,7 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import axios from "axios";
-import { useGetUserProfileQuery } from "../Redux/userApi";
+import { useGetUserProfileQuery } from "../../Redux/userApi";
 import Swal from "sweetalert2";
 
 function Search() {
@@ -44,14 +44,14 @@ function Search() {
     setLoading(true);
     setError(null);
     try {
-      const userId = user._id
+      const userId = user._id;
       // إذا لم يكن هناك searchTerm، Backend الخاص بك سيعالج ذلك (إرجاع الكل أو لا شيء)
       const response = await axios.get(
         `http://localhost:3000/api/search/${userId}?svalue=${encodeURIComponent(
           searchTerm || ""
         )}`,
         {
-          withCredentials:true,
+          withCredentials: true,
         }
       );
       // <--- التحقق هنا مما إذا كانت الاستجابة تحتوي على 'message'
@@ -70,16 +70,16 @@ function Search() {
       setLoading(false);
     }
   };
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   useEffect(() => {
     fetchSearchResults();
-    if(!user){
-    navigate("/signin",{ replace: true })
-  }
-  }, [location.search,user]);
+    if (!user) {
+      navigate("/signin", { replace: true });
+    }
+  }, [location.search, user]);
 
   // delete function
-  const deleteFunc = async (id) => {
+  const deleteFunc = async (customerId) => {
     // عرض رسالة التأكيد من SweetAlert2
     const result = await Swal.fire({
       title: "Are you sure?", // عنوان الرسالة
@@ -93,21 +93,18 @@ function Search() {
 
     // إذا أكد المستخدم الحذف
     if (result.isConfirmed) {
+      const userId = user._id;
       try {
-        await axios.delete(`http://localhost:3000/api/allcustomers/${id}`, {
-          headers: {
-            Authorization: `Bearer ${user.token}`, // إرسال التوكن في رأس الطلب
-          },
+        await axios.delete(`http://localhost:3000/api/deletecustomer/${customerId}/${userId}`, {
+          withCredentials: true,
         });
         fetchSearchResults();
         // عرض رسالة نجاح بعد الحذف
         Swal.fire("Deleted!", "The customer has been deleted.", "success");
       } catch (err) {
         console.error("Failed to delete customer:", err);
-        setError("Failed to delete customer. Please try again later.");
-      } finally {
-        console.log("done");
-      }
+        Swal.fire("Error!", "Failed to delete customer.", "error");
+      } 
     }
   };
 
@@ -124,21 +121,6 @@ function Search() {
       >
         <CircularProgress />
         <Typography sx={{ mt: 2 }}>Searching...</Typography>
-      </Box>
-    );
-  }
-
-  if (error) {
-    return (
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "80vh",
-        }}
-      >
-        <Alert severity="error">{error}</Alert>
       </Box>
     );
   }
@@ -187,21 +169,21 @@ function Search() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {searchResults.map((user, index) => (
-                  <TableRow key={user._id}>
+                {searchResults.map((customer, index) => (
+                  <TableRow key={customer._id}>
                     <TableCell component="th" scope="row">
                       {index + 1}
                     </TableCell>
                     <TableCell>
-                      {user.firstName} {user.lastName}
+                      {customer.firstName} {customer.lastName}
                     </TableCell>
-                    <TableCell>{user.gender}</TableCell>
-                    <TableCell>{user.country}</TableCell>
-                    <TableCell>{user.age}</TableCell>
+                    <TableCell>{customer.gender}</TableCell>
+                    <TableCell>{customer.country}</TableCell>
+                    <TableCell>{customer.age}</TableCell>
                     <TableCell align="center">
                       <Button
                         component={RouterLink}
-                        to={`/view/${user._id}`} // Link to a dummy view page
+                        to={`/view/${customer._id}`} // Link to a dummy view page
                         variant="contained"
                         color="primary"
                         size="small"
@@ -212,22 +194,25 @@ function Search() {
                       </Button>
                       <Button
                         component={RouterLink}
-                        to={`/edite/${user._id}`} // Link to a dummy edit page
+                        to={`/edite/${customer._id}`} // Link to a dummy edit page
                         variant="contained"
                         color="primary"
                         size="small"
                         sx={{ minWidth: 0, p: "5px", mr: 1 }}
-                        title="Edit user"
+                        title="Edit customer"
                       >
                         <EditIcon fontSize="small" />
                       </Button>
                       <Button
-                        onClick={() => deleteFunc(user._id)}
+                        onClick={() => {
+                          const customerId = customer._id;
+                          deleteFunc(customerId);
+                        }}
                         variant="contained"
                         color="error"
                         size="small"
                         sx={{ minWidth: 0, p: "5px" }}
-                        title="Delete user"
+                        title="Delete customer"
                         // No onClick handler as per requirement for no functions
                       >
                         <DeleteIcon fontSize="small" />

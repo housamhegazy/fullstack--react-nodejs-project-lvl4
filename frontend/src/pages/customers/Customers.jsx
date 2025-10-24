@@ -17,8 +17,8 @@ import { Delete, Edit, RemoveRedEye } from "@mui/icons-material";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios"; // استيراد Axios
 import Swal from "sweetalert2";
-import { useGetUserProfileQuery } from "../Redux/userApi";
-import LoadingPage from "../components/loading/loadingPage";
+import { useGetUserProfileQuery } from "../../Redux/userApi";
+import LoadingPage from "../../components/loading/loadingPage";
 const Customers = () => {
   const localTheme = localStorage.getItem("localTheme");
   const defaultMode =

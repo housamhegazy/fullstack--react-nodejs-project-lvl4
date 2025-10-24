@@ -16,8 +16,7 @@ import {
 import axios from "axios"; // استيراد Axios
 import Swal from "sweetalert2"; // لاستخدام SweetAlert2
 import { useNavigate } from "react-router-dom";
-import { useGetUserProfileQuery } from "../Redux/userApi";
-import { useTheme } from "@mui/material/styles";
+import { useGetUserProfileQuery } from "../../Redux/userApi";
 // قائمة الدول كما كانت في كود EJS
 const country_list = [
   "Afghanistan",
