@@ -3,7 +3,6 @@
 // دالة معالجة الأخطاء العامة التي استخدمتها داخل try...catch
 const handleError = (res, error) => {
     console.error("API Error:", error);
-    
     let statusCode = 500;
     let message = "An internal server error occurred.";
 

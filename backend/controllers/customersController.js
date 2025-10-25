@@ -83,7 +83,6 @@ const updateCustomer = async (req, res) => {
 const deleteCustomer = async (req, res) => {
   const customerId = req.params.customerId;
   const owner = req.params.userId;
-  console.log(customerId,owner);
   try {
     const customer = await CustomerModel.findOneAndDelete({
       _id: customerId,

@@ -42,7 +42,6 @@ function Search() {
     setBackendMessage(null); // <--- مسح الرسالة السابقة عند جلب بيانات جديدة
     setSearchResults([]); // مسح النتائج السابقة
     setLoading(true);
-    setError(null);
     try {
       const userId = user._id;
       // إذا لم يكن هناك searchTerm، Backend الخاص بك سيعالج ذلك (إرجاع الكل أو لا شيء)
@@ -231,6 +230,11 @@ function Search() {
               No customers found matching your search.
             </Typography>
           )
+        )}
+        {error && (
+          <Alert severity="error" sx={{ mt: 2 }}>
+            {error}
+          </Alert>
         )}
       </Box>
     </Container>

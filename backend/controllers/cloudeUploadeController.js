@@ -110,7 +110,7 @@ const uploadmanyImages = async (req, res) => {
     });
   } catch (err) {
     console.error("Batch Upload Error:", err);
-    res.status(500).json({ message: "حدث خطأ أثناء رفع الصور إلى Cloudinary" });
+    res.status(500).json({ message: "error during upload images " });
   }
 };
 
@@ -149,8 +149,8 @@ const getImages = async (req, res) => {
 
     // ⭐️ الخطوة 3: إرسال الرد
     res.status(200).json({
-      message: "✅ تم استرجاع الصور بنجاح.",
-      images: images, // ✅ استخدام النتيجة الصحيحة
+      message: "✅ images fetched successfully.",
+      images: images, // الصور المسترجعة
       currentPage: page,
       totalPages: Math.ceil(totalImages / limit),
       totalImages: totalImages,
@@ -170,12 +170,12 @@ const deleteImage = async (req, res) => {
     });
 
     if (!deletedImage) {
-      return res.status(404).json({ message: "لم يتم العثور على الصورة." });
+      return res.status(404).json({ message: "failed to fetch images" });
     }
     // 2. ✅ الحذف من Cloudinary
     const cloudinaryResponse = await cloudinary.uploader.destroy(owner);
     res.status(200).json({
-      message: "تم حذف الصورة من Cloudinary وقاعدة البيانات بنجاح.",
+      message: "image deleted successfully.",
       cloudinaryResult: cloudinaryResponse.result,
     });
   } catch (error) {
@@ -195,9 +195,7 @@ const processDeleteAllImages = async (ownerId) => {
       // 2. حذف المجلد نفسه
       await cloudinary.api.delete_folder(folderPath);
     } catch (folderError) {
-      // Cloudinary ترجع عادةً http_code 404 إذا لم يتم العثور على المجلد
       if (folderError.http_code !== 404) {
-        // إذا كان الخطأ شيئًا آخر غير 404، أعد رمي الخطأ.
         throw folderError;
       }
       // إذا كان 404 (المجلد غير موجود)، تجاهل الخطأ واستمر.
@@ -211,7 +209,7 @@ const processDeleteAllImages = async (ownerId) => {
 
     return { dbCount: deletedImages.deletedCount };
   } catch (error) {
-    console.log(error);
+    return handleError(res, error);
   }
 };
 
@@ -222,7 +220,7 @@ const deleteAllImages = async (req, res) => {
     const result = await processDeleteAllImages(owner);
 
     res.status(200).json({
-      message: "✅ تم حذف جميع الصور من Cloudinary وقاعدة البيانات بنجاح.",
+      message: "all images deleted successfully from database.",
       dbResult: result.dbCount,
     });
   } catch (error) {
@@ -241,7 +239,7 @@ const downloadImage = async (req, res) => {
     if (!image) {
       return res
         .status(404)
-        .json({ message: "لم يتم العثور على الصورة للتحميل." });
+        .json({ message: "not found image to download." });
     }
 
     // 2. توليد رابط الصورة المباشر (بدون flags: attachment)
@@ -290,7 +288,7 @@ const downloadAll = async (req, res) => {
     // 1. جلب جميع الصور للمستخدم من قاعدة البيانات
     const images = await ImageModel.find({ owner: userId }).select("public_id");
     if (!images.length === 0) {
-      return res.status(404).json({ message: "لا توجد صور متاحة للتحميل." });
+      return res.json({ message: "not found image to download." });
     }
     // 2. إعداد ترويسات الاستجابة (Headers)
     const archive = archiver("zip", {
