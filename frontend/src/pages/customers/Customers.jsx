@@ -35,8 +35,8 @@ const Customers = () => {
 
   // Function to fetch all customers
   const fetchcustomers = async () => {
-    const userId = user._id;
-    if (!user || !userId) {
+    const userId = user?._id;
+    if (!userId) {
       return;
     }
     setLoading(true);
