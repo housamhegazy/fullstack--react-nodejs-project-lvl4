@@ -11,7 +11,6 @@ const LocalUpload = () => {
   const {
     data: user,
     isLoading: userLoading,
-    isError,
   } = useGetUserProfileQuery(); // Fetch current user
   const [selectedFile, setSelectedFile] = useState(null);
 
@@ -35,6 +34,7 @@ const LocalUpload = () => {
             const errorData =  res
               .json();
             throw new Error(
+              // @ts-ignore
               errorData.message ||
               `Failed to fetch last image with status: ${res.status}`
             );

@@ -42,7 +42,8 @@ const Profile = () => {
   const authState = useSelector((state) => state.auth);
   const user = authState?.user; // <--- هنا بيانات المستخدم!
   const isLoadingAuth = authState?.isLoadingAuth; // حالة التحقق الأولي من المصادقة
-  const [triggerSignOut, { isLoading: isSigningOut }] = useSignOutMutation();
+  const [triggerSignOut] = useSignOutMutation();
+
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
