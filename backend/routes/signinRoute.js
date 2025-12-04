@@ -33,16 +33,6 @@ router.post("", async (req, res) => {
         message: "This account must sign in via a social login provider.",
       });
     }
-    // تحقق مما إذا كان المستخدم مسجلاً عبر جوجل لو حبيت امنع اللي مسجل عبر جوجل انه يسجل الدخول العادي
-    // if (user.googleId) {
-    //   return res
-    //     .status(400)
-    //     .json({
-    //       message:
-    //         "This account is registered with Google. Please sign in with your Google account.",
-    //     });
-    // }
-    // تحقق من كلمة المرور
     const isMatch = await user.matchPassword(password);
     if (!isMatch) {
       return res.status(400).json({ message: "incorrect password" });

@@ -3,6 +3,7 @@
     "checkJs": true,
     "jsx": "react-jsx",
     "baseUrl": "src",
+    "module": "esnext",
     "resolveJsonModule": true
   },
   "include": [
