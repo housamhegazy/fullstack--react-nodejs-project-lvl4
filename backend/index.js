@@ -8,7 +8,7 @@ const path = require("path");
 require("dotenv").config();
 require("./config/passport"); // استيراد إعداد passport
 const methodOverride = require("method-override");
-const { notFound, errorHandler } = require('./utils/errorMiddleware');
+const { notFound, errorHandler } = require("./utils/errorMiddleware");
 // استيراد مسارات وميدل ويرز (افترض وجود هذه الملفات في مشروعك)
 // <--- استيراد Middleware التحقق
 const isAuthenticated = require("./middleware/authMiddleware");
@@ -17,16 +17,15 @@ const registerRoute = require("./routes/registerRoute");
 const signinRoute = require("./routes/signinRoute");
 const signoutRoute = require("./routes/signoutRoute");
 const socialAuthRoute = require("./routes/socialAuthRoute");
-const forgotPasswordRoute = require("./routes/resetPasswordRoutes/forgetPasswordRoute"); 
-const resetPasswordRoute = require("./routes/resetPasswordRoutes/resetPasswordRoute"); 
-const customersRoute = require("./routes/customersRoute")
-const userRoute = require('./routes/userRoute');
+const forgotPasswordRoute = require("./routes/resetPasswordRoutes/forgetPasswordRoute");
+const resetPasswordRoute = require("./routes/resetPasswordRoutes/resetPasswordRoute");
+const customersRoute = require("./routes/customersRoute");
+const userRoute = require("./routes/userRoute");
 const localUpload = require("./routes/localUploadRoute");
-const cloudUploadRoute =require("./routes/clouduploadRoute")
-const searchRoute = require("./routes/searchRoute")
+const cloudUploadRoute = require("./routes/clouduploadRoute");
+const searchRoute = require("./routes/searchRoute");
 
-
-const MongoStore = require("connect-mongo"); 
+const MongoStore = require("connect-mongo");
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -35,8 +34,8 @@ const port = process.env.PORT || 3000;
 
 app.use(
   cors({
-    origin: "http://localhost:5173", // ضع هنا عنوان الفرونتند
-    credentials: true, // يسمح بإرسال الكوكيز
+    origin: process.env.FRONTEND_URL,
+    credentials: true,
   })
 ); // تفعيل CORS للسماح لـ frontend (الذي يعمل على منفذ مختلف) بالاتصال بـ backend
 app.use(bodyParser.json()); // يسمح لـ Express بقراءة JSON في body الطلبات
@@ -69,7 +68,7 @@ app.use(
     },
   })
 );
-// إعداد Passport لتسجيل الدخول بجوجل 
+// إعداد Passport لتسجيل الدخول بجوجل
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -82,17 +81,17 @@ app.use("/api/signout", signoutRoute);
 app.use("", socialAuthRoute);
 app.use("/api/forgot-password", forgotPasswordRoute); // <--- إضافة هذا
 app.use("/api/reset-password", resetPasswordRoute); // <--- إضافة هذا
-app.use("",isAuthenticated,localUpload)
-app.use('',  isAuthenticated, userRoute); 
+app.use("", isAuthenticated, localUpload);
+app.use("", isAuthenticated, userRoute);
 
 app.use("", isAuthenticated, mainRoute);
 app.use("", isAuthenticated, customersRoute);
-app.use("",isAuthenticated,cloudUploadRoute)
-app.use("",isAuthenticated,searchRoute)
+app.use("", isAuthenticated, cloudUploadRoute);
+app.use("", isAuthenticated, searchRoute);
 
 // ********************** الاتصال بـ MongoDB **********************
-
-app.use(methodOverride("_method"));
+//=================================== live reload setup ===================================
+app.use(methodOverride("_method")); // لتمكين استخدام طرق HTTP مثل PUT و DELETE
 
 //auto refresh
 const livereload = require("livereload"); // استيراد وحدة livereload
@@ -106,7 +105,7 @@ liveReloadServer.server.once("connection", () => {
     liveReloadServer.refresh("/");
   }, 100);
 });
-//end livereload
+//===============================================end livereload ====================================
 
 // 1. معالج أخطاء المسارات غير الموجودة (404)
 app.use(notFound);
@@ -116,17 +115,12 @@ app.use(errorHandler);
 
 mongoose
   .connect(
-    "mongodb+srv://geohousam_db_user:UAc4KjEnIs8qVEEJ@addcustomercluster.xoewuxa.mongodb.net/all-data?retryWrites=true&w=majority&appName=addcustomercluster",
-    {
-      // useUnifiedTopology: true,
-      // useCreateIndex: true, // Mongoose 6+ لا يحتاج لهذا الخيار
-      // useFindAndModify: false // Mongoose 6+ لا يحتاج لهذا الخيار
-    }
+    process.env.MONGODB_URI ||
+      "mongodb+srv://geohousam_db_user:UAc4KjEnIs8qVEEJ@addcustomercluster.xoewuxa.mongodb.net/all-data?retryWrites=true&w=majority&appName=addcustomercluster",
+    {}
   )
   .then(() => console.log("Connected to MongoDB!"))
   .catch((err) => console.error("Could not connect to MongoDB...", err));
-// يمكنك استبدال 'mongodb://localhost:27017/myusersdb' برابط اتصال MongoDB Atlas الخاص بك
-// مثال: 'mongodb+srv://<username>:<password>@cluster0.abcde.mongodb.net/myusersdb?retryWrites=true&w=majority'
 // ***************************************************************
 
 app.listen(port, () => {
