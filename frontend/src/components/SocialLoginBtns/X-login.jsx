@@ -5,7 +5,7 @@ import { Twitter } from '@mui/icons-material'; // لا تزال الأيقونة
 const XLoginButton = () => {
   const handleXLogin = () => {
     // يوجه إلى مسار الواجهة الخلفية (Backend) لبدء المصادقة
-    window.location.href = 'http://localhost:3000/auth/x'; 
+    window.location.href = `${import.meta.env.VITE_BACKEND_URL}/auth/x`; 
   };
   
   return (

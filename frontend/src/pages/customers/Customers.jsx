@@ -43,7 +43,8 @@ const Customers = () => {
     setError(null); // Clear previous errors
     try {
       const response = await axios.get(
-        `http://localhost:3000/api/allcustomers/${userId}`,
+        // @ts-ignore
+        `${import.meta.env.VITE_BACKEND_URL}/api/allcustomers/${userId}`,
         {
           withCredentials: true,
         }
@@ -82,7 +83,7 @@ const Customers = () => {
     if (result.isConfirmed) {
       try {
         await axios.delete(
-          `http://localhost:3000/api/deletecustomer/${customerId}/${
+          `${import.meta.env.VITE_BACKEND_URL}/api/deletecustomer/${customerId}/${
             user && user._id
           }`,
           {
@@ -116,7 +117,7 @@ const Customers = () => {
     if (result.isConfirmed) {
       try {
         await axios.delete(
-          `http://localhost:3000/api/deleteallcustomers/${user && user._id}`,
+          `${import.meta.env.VITE_BACKEND_URL}/api/deleteallcustomers/${user && user._id}`,
           {
             withCredentials: true,
           }

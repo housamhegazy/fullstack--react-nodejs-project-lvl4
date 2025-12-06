@@ -34,7 +34,7 @@ function ResetPassword() {
       try {
         setLoading(true);
         // إرسال طلب للتحقق من صلاحية الرمز في الخادم
-        await axios.get(`http://localhost:3000/api/reset-password/${token}`);
+        await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/reset-password/${token}`);
         setIsTokenValid(true);
       } catch (err) {
         console.error("Token verification error:", err);
@@ -66,7 +66,7 @@ function ResetPassword() {
 
     try {
       // إرسال كلمة المرور الجديدة إلى الخادم
-      await axios.post(`http://localhost:3000/api/reset-password/${token}`, {
+      await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/reset-password/${token}`, {
         password,
       });
       setSuccess("تمت إعادة تعيين كلمة المرور بنجاح.");

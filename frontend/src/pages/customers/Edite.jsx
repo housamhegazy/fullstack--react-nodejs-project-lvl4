@@ -397,7 +397,7 @@ function Edite() {
       setDatatError(null);
       setSuccess(null);
       try {
-        await axios.delete(`http://localhost:3000/api/deletecustomer/${customer._id}/${user._id}`, {
+        await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/api/deletecustomer/${customer._id}/${user._id}`, {
           
             withCredentials: true,
           

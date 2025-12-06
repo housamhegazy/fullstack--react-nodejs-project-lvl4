@@ -7,7 +7,7 @@ const passport = require("passport"); // إضافة passport
 const path = require("path");
 require("dotenv").config();
 require("./config/passport"); // استيراد إعداد passport
-const methodOverride = require("method-override");
+// const methodOverride = require("method-override");
 const { notFound, errorHandler } = require("./utils/errorMiddleware");
 // استيراد مسارات وميدل ويرز (افترض وجود هذه الملفات في مشروعك)
 // <--- استيراد Middleware التحقق
@@ -89,23 +89,6 @@ app.use("", isAuthenticated, cloudUploadRoute);
 app.use("", isAuthenticated, searchRoute);
 
 // ********************** الاتصال بـ MongoDB **********************
-//=================================== live reload setup ===================================
-app.use(methodOverride("_method")); // لتمكين استخدام طرق HTTP مثل PUT و DELETE
-if(process.env.NODE_ENV === "development"){
-//auto refresh
-const livereload = require("livereload"); // استيراد وحدة livereload
-const liveReloadServer = livereload.createServer(); // إنشاء سيرفر LiveReload
-
-liveReloadServer.watch(path.join(__dirname, "public"));
-const connectLivereload = require("connect-livereload"); // استيراد Middleware
-app.use(connectLivereload());
-liveReloadServer.server.once("connection", () => {
-  setTimeout(() => {
-    liveReloadServer.refresh("/");
-  }, 100);
-});
-}
-//===============================================end livereload ====================================
 
 // 1. معالج أخطاء المسارات غير الموجودة (404)
 app.use(notFound);

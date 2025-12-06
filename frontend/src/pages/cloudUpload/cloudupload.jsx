@@ -74,7 +74,7 @@ const CloudinarUploud = () => {
       const orderParam = `&order=${newSortOrder}`;
       try {
         const result = await fetch(
-          `http://localhost:3000/api/allimages/${
+          `${import.meta.env.VITE_BACKEND_URL}/api/allimages/${
             user && user._id
           }?page=${pageNumber}&limit=${IMAGES_PER_PAGE}${orderParam}`,
           {
@@ -179,7 +179,7 @@ const CloudinarUploud = () => {
 
     if (result.isConfirmed) {
       try {
-        const res = await fetch(`http://localhost:3000/api/cloudupload/add`, {
+        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/cloudupload/add`, {
           body: formData,
           method: "POST",
           credentials: "include",
@@ -238,7 +238,7 @@ const CloudinarUploud = () => {
       setMultiLoading(true);
       try {
         const response = await fetch(
-          `http://localhost:3000/api/cloudupload/addmany`,
+          `${import.meta.env.VITE_BACKEND_URL}/api/cloudupload/addmany`,
           {
             body: formData,
             method: "POST",
@@ -300,7 +300,8 @@ const CloudinarUploud = () => {
         const encodedPublicId = encodeURIComponent(publicId); // تشفير المسار حتى يستطيع الباك اند قرائته
 
         const response = await fetch(
-          `http://localhost:3000/api/allImages/delete/${encodedPublicId}/${
+          // @ts-ignore
+          `${import.meta.env.VITE_BACKEND_URL}/api/allImages/delete/${encodedPublicId}/${
             user && owner
           }`,
           {
@@ -340,7 +341,8 @@ const CloudinarUploud = () => {
       setDeletingAll(true);
       try {
         const response = await fetch(
-          `http://localhost:3000/api/allImages/deleteall/${user && user._id}`,
+          // @ts-ignore
+          `${import.meta.env.VITE_BACKEND_URL}/api/allImages/deleteall/${user && user._id}`,
           {
             method: "delete",
             credentials: "include",
@@ -367,7 +369,8 @@ const CloudinarUploud = () => {
   const handledownload = async (img) => {
     const publicId = img.public_id;
     const encodedPublicId = encodeURIComponent(publicId);
-    const backendDownloadRoute = `http://localhost:3000/api/download/${encodedPublicId}`;
+    // @ts-ignore
+    const backendDownloadRoute = `${import.meta.env.VITE_BACKEND_URL}/api/download/${encodedPublicId}`;
     try {
       // 1. 🔍 إرسال الطلب في الخلفية للتأكد من نجاحه
       const response = await fetch(backendDownloadRoute, {
@@ -393,7 +396,7 @@ const CloudinarUploud = () => {
   //============================= download all images ==========================
   const handlwDownloadAll = async () => {
     const encodedUserId = encodeURIComponent(user && user._id);
-    const backendDownloadRoute = `http://localhost:3000/api/downloadAll/${encodedUserId}`;
+    const backendDownloadRoute = `${import.meta.env.VITE_BACKEND_URL}/api/downloadAll/${encodedUserId}`;
     try {
       // 1. 🔍 إرسال الطلب في الخلفية للتأكد من نجاحه
       const response = await fetch(backendDownloadRoute, {

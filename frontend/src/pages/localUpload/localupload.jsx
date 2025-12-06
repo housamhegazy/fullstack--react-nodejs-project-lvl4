@@ -22,7 +22,8 @@ const LocalUpload = () => {
 
   const getLastImg = async () => {
     const userId = user._id
-    await fetch(`http://localhost:3000/api/lastpic/${userId}`, {
+    // @ts-ignore
+    await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/lastpic/${userId}`, {
       method: "GET",
       credentials: "include",
     })
@@ -61,7 +62,7 @@ const LocalUpload = () => {
   const getAllimgs = async () => {
     setLoading(true);
     
-    await fetch(`http://localhost:3000/api/allpic/${user._id}`, {
+    await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/allpic/${user._id}`, {
       method: "GET",
       credentials: "include",
     })
@@ -152,7 +153,8 @@ const LocalUpload = () => {
 
     if (result.isConfirmed) {
       try {
-        const res = await fetch("http://localhost:3000/api/uploadpic", {
+        // @ts-ignore
+        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/uploadpic`, {
           method: "POST",
           body: formData,
           credentials: "include",
@@ -194,7 +196,8 @@ const LocalUpload = () => {
     if (result.isConfirmed) {
       try {
         const res = await fetch(
-          `http://localhost:3000/api/deleteImage/${image}/${user._id}`,
+          // @ts-ignore
+          `${import.meta.env.VITE_BACKEND_URL}/api/deleteImage/${image}/${user._id}`,
           {
             method: "DELETE",
             credentials: "include",

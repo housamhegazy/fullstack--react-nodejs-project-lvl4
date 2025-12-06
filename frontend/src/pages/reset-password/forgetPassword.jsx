@@ -43,7 +43,8 @@ function ForgotPassword() {
 
         try {
             const response = await axios.post(
-                "http://localhost:3000/api/forgot-password",
+                // @ts-ignore
+                `${import.meta.env.VITE_BACKEND_URL}/api/forgot-password`,
                 { email }
             );
 

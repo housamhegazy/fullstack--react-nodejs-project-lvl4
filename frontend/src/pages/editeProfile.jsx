@@ -104,7 +104,7 @@ const EditProfile = () => {
 
     try {
       const response = await axios.put(
-        "http://localhost:3000/api/users/update-profile", // Adjust URL
+        `${import.meta.env.VITE_BACKEND_URL}/api/users/update-profile`, // Adjust URL
         data,
         {
           withCredentials: true, // For session/auth
@@ -152,7 +152,7 @@ const EditProfile = () => {
       setIsDeleting(true);
       try {
         const response = await fetch(
-          `http://localhost:3000/api/deleteprofilephoto/${userId}`,
+          `${import.meta.env.VITE_BACKEND_URL}/api/deleteprofilephoto/${userId}`,
           {
             method: "delete",
             credentials: "include",

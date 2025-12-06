@@ -307,7 +307,8 @@ function AddCustomer() {
     try {
       // إرسال البيانات إلى الـ backend
       await axios.post(
-        `http://localhost:3000/api/addcustomers`,
+        // @ts-ignore
+        `${import.meta.env.VITE_BACKEND_URL}/api/addcustomers`,
         {
           customerData: formData,
           userId: user._id,

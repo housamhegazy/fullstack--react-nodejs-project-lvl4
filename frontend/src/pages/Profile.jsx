@@ -99,7 +99,7 @@ const Profile = () => {
       try {
         const userId = user._id;
         const response = await fetch(
-          `http://localhost:3000/api/deleteuser/${user && userId}`,
+          `${import.meta.env.VITE_BACKEND_URL}/api/deleteuser/${user && userId}`,
           {
             method: "delete",
             credentials: "include",

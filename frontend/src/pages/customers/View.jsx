@@ -28,7 +28,7 @@ function View() {
     setError(null); // Clear previous errors
     try {
       const response = await axios.get(
-        `http://localhost:3000/api/allcustomers/${customerId}/${userId}`,
+        `${import.meta.env.VITE_BACKEND_URL}/api/allcustomers/${customerId}/${userId}`,
         {
           withCredentials:true
         }

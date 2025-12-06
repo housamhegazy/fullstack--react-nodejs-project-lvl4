@@ -5,7 +5,8 @@ import React from 'react';
 
 const GoogleLogin = () => {
   const handleGoogleLogin = () => {
-    window.location.href = 'http://localhost:3000/auth/google'; // يوجه إلى نهاية الباك اند
+    // @ts-ignore
+    window.location.href = `${import.meta.env.VITE_BACKEND_URL}/auth/google`; // يوجه إلى نهاية الباك اند
   };
   return (
      <Box sx={{ my: 2 }}>

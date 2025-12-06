@@ -11,7 +11,7 @@ const AuthSuccess = () => {
       try {
         // قم بطلب API للتحقق من حالة المصادقة وجلب بيانات المستخدم
         // تأكد من أن هذا المسار يعود ببيانات المستخدم إذا كان مسجل دخول
-        const response = await axios.get("http://localhost:3000/api/profile", {
+        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/profile`, {
           withCredentials: true, // ضروري لإرسال الكوكيز مع الطلب
         });
         

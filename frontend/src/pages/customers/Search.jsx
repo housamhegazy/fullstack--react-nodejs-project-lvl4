@@ -46,7 +46,7 @@ function Search() {
       const userId = user._id;
       // إذا لم يكن هناك searchTerm، Backend الخاص بك سيعالج ذلك (إرجاع الكل أو لا شيء)
       const response = await axios.get(
-        `http://localhost:3000/api/search/${userId}?svalue=${encodeURIComponent(
+        `${import.meta.env.VITE_BACKEND_URL}/api/search/${userId}?svalue=${encodeURIComponent(
           searchTerm || ""
         )}`,
         {
@@ -94,7 +94,7 @@ function Search() {
     if (result.isConfirmed) {
       const userId = user._id;
       try {
-        await axios.delete(`http://localhost:3000/api/deletecustomer/${customerId}/${userId}`, {
+        await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/api/deletecustomer/${customerId}/${userId}`, {
           withCredentials: true,
         });
         fetchSearchResults();

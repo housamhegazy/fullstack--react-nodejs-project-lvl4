@@ -5,7 +5,8 @@ import React from 'react';
 
 const FacebooklogIn = () => {
   const handleFacebook = () => {
-    window.location.href = 'http://localhost:3000/auth/facebook'; // يوجه إلى نهاية الباك اند
+    // @ts-ignore
+    window.location.href = `${import.meta.env.VITE_BACKEND_URL}/auth/facebook`; // يوجه إلى نهاية الباك اند
   };
   return (
      <Box sx={{ my: 2 }}>
