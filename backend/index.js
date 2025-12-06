@@ -59,12 +59,11 @@ app.use(
         if (err) console.error("MongoStore error:", err);
       }
     ),
-
     cookie: {
       secure: process.env.NODE_ENV === "production", // true في الإنتاج، false في التطوير
       httpOnly: true, // يوصى به دائمًا
+      sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax", // ضبط sameSite بناءً على البيئة
       maxAge: 1000 * 60 * 60 * 24, // يوم واحد
-      sameSite: "Lax", // <--- قم بتغيير 'strict' إلى 'Lax'
     },
   })
 );
@@ -92,7 +91,7 @@ app.use("", isAuthenticated, searchRoute);
 // ********************** الاتصال بـ MongoDB **********************
 //=================================== live reload setup ===================================
 app.use(methodOverride("_method")); // لتمكين استخدام طرق HTTP مثل PUT و DELETE
-
+if(process.env.NODE_ENV === "development"){
 //auto refresh
 const livereload = require("livereload"); // استيراد وحدة livereload
 const liveReloadServer = livereload.createServer(); // إنشاء سيرفر LiveReload
@@ -105,6 +104,7 @@ liveReloadServer.server.once("connection", () => {
     liveReloadServer.refresh("/");
   }, 100);
 });
+}
 //===============================================end livereload ====================================
 
 // 1. معالج أخطاء المسارات غير الموجودة (404)
