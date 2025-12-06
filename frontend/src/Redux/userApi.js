@@ -6,7 +6,7 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 export const userApi = createApi({
   reducerPath: 'userApi',
   tagTypes: ['User'],
-  baseQuery: fetchBaseQuery({ baseUrl: BACKEND_URL , credentials: 'include' }),
+  baseQuery: fetchBaseQuery({ baseUrl: BACKEND_URL, credentials: 'include' }),
   endpoints: (builder) => ({
     getUserProfile: builder.query({
       query: () => `/api/profile`,
