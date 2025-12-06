@@ -6,7 +6,7 @@ const UserSchema = require("../models/userModel"); // استيراد نموذج 
 const {handleError} = require("../utils/errorMiddleware");
 
 
-router.post("", async (req, res) => {
+router.post("/", async (req, res) => {
   const { fullName, email, password, confirmPassword } = req.body;
 
   // التحقق من الواجهة الخلفية (مهم جداً حتى لو تم التحقق في الواجهة الأمامية)

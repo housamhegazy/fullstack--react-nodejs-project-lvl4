@@ -4,7 +4,7 @@ const UserSchema = require("../models/userModel"); // استيراد نموذج 
 const jwt = require("jsonwebtoken");
 // دالة handleError (يمكنك وضعها في ملف منفصل واستيرادها)
 const {handleError} = require("../utils/errorMiddleware");
-router.post("", async (req, res) => {
+router.post("/", async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
     return res.status(400).json({ message: "all fields required" });
@@ -15,9 +15,7 @@ router.post("", async (req, res) => {
       .json({ message: "password length must be at least 6 characters long " });
   }
   if (!/^\S+@\S+\.\S+$/.test(email)) {
-    return res
-      .status(400)
-      .json({ message: "please use a valid email address." });
+    return res.status(400).json({ message: "please use a valid email address." });
   }
 
   // تحقق من وجود المستخدم وكلمة المرور
