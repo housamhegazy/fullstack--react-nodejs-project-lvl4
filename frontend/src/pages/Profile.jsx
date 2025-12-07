@@ -24,7 +24,7 @@ import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import { format, formatDistanceToNow } from "date-fns";
 import { useDispatch, useSelector } from "react-redux";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Edit } from "@mui/icons-material";
 import GoogleIcon from "@mui/icons-material/Google";
@@ -38,7 +38,7 @@ import { useSignOutMutation } from "../Redux/userApi";
 
 const Profile = () => {
   const theme = useTheme();
-  const { user, isAuthenticated, isLoadingAuth } = useSelector(
+  const { user,  isLoadingAuth } = useSelector(
     // @ts-ignore
     (state) => state.auth
   );

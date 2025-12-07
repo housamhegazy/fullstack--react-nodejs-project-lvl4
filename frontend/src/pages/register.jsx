@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Container,
   Box,
@@ -11,19 +11,12 @@ import {
 } from "@mui/material";
 import AppRegistrationOutlinedIcon from "@mui/icons-material/AppRegistrationOutlined"; // أيقونة للتسجيل
 import { Link, useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { useGetUserProfileQuery, useSignupMutation } from "../Redux/userApi";
+import { useDispatch } from "react-redux";
 import { setAuthUser } from "../Redux/authSlice";
+import { useSignupMutation } from "../Redux/userApi";
 
 function SignUp() {
   const [signupMutation] = useSignupMutation();
-  // @ts-ignore
-  const authState = useSelector((state) => state.auth);
-  //===========================================================================
-  //  جلب حالة المصادقة وحالة التحميل الأولية من Redux Store
-  // const user = authState?.user; // <--- هنا بيانات المستخدم!
-  const isAuthenticated = authState?.isAuthenticated;
-  const isLoadingAuth = authState?.isLoadingAuth; // حالة التحقق الأولي من المصادقة
 
   //=================================================================================
   const navigate = useNavigate();
@@ -36,17 +29,6 @@ function SignUp() {
   const [loading, setLoading] = useState(false);
   const theme = useTheme();
   const dispatch = useDispatch();
-  const { refetch } = useGetUserProfileQuery();
-
-  useEffect(() => {
-    // تحقق من أن التحميل الأولي قد انتهى
-    if (!isLoadingAuth && isAuthenticated) {
-      // إذا كان المستخدم مصادقًا عليه، قم بإعادة توجيهه إلى الصفحة الرئيسية
-      console.log("User is authenticated, redirecting from signin page.");
-      navigate("/", { replace: true });
-    }
-  }, [isAuthenticated, isLoadingAuth, navigate]);
-
   const validateEmail = (email) => {
     return /\S+@\S+\.\S+/.test(email);
   };
@@ -88,7 +70,7 @@ function SignUp() {
       }).unwrap();
       setSuccess(response.message);
       dispatch(setAuthUser({ user: response.user, isAuthenticated: true })); // <--- تحديث Redux Auth State
-      await refetch();
+      // await refetch();
       setTimeout(() => {
         navigate("/");
       }, 1500); // تأخير بسيط قبل إعادة التوجيه

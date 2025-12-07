@@ -22,9 +22,8 @@ import CloudinarUploud from "./pages/cloudUpload/cloudupload";
 
 
 function App() {
-
-  // @ts-ignore
-  const { user, isAuthenticated, isLoadingAuth } = useSelector(
+  const {  isAuthenticated } = useSelector(
+    // @ts-ignore
     (state) => state.auth
   );
 
@@ -93,6 +92,7 @@ function App() {
 
 
   return (
+    // @ts-ignore
     <RouterProvider router={router} fallbackElement={<FetchingdataLoader />} />
   );
 }

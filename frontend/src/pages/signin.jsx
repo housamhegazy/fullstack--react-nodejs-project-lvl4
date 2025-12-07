@@ -12,15 +12,15 @@ import {
 } from "@mui/material";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import { Link, useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { setAuthUser } from "../Redux/authSlice";
-import { useGetUserProfileQuery, useSigninMutation } from "../Redux/userApi";
+import {  useSelector } from "react-redux";
+
 import GoogleLogin from "../components/SocialLoginBtns/GoogleLogin";
 import FacebooklogIn from "../components/SocialLoginBtns/FacebookLogin";
 import XLoginButton from "../components/SocialLoginBtns/X-login";
+import { useSigninMutation } from "../Redux/userApi";
 
 function SignIn() {
-  const { user, isAuthenticated, isLoadingAuth } = useSelector(
+  const { isLoadingAuth } = useSelector(
     // @ts-ignore
     (state) => state.auth
   );
