@@ -12,16 +12,13 @@ import { Box } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import LoadingPage from "./components/loading/loadingPage";
 import { useGetUserProfileQuery } from "./Redux/userApi";
+import { clearAuthUser, setAuthUser, setLoadingAuth } from "./Redux/authSlice";
 
 //drawer width
 const drawerWidth = 240;
 
 const Root = () => {
-  const { isLoadingAuth } = useSelector(
-    // @ts-ignore
-    (state) => state.auth
-  );
-  // const dispatch = useDispatch();
+  const dispatch = useDispatch();
   //open and close drawer functions
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
@@ -68,16 +65,16 @@ const Root = () => {
   } = useGetUserProfileQuery();
 
   // useEffect لتحديث Redux authSlice بناءً على حالة جلب بيانات الملف الشخصي
-  // useEffect(() => {
-  //   dispatch(setLoadingAuth(true));
-  //   if (isLoading) return; // لسه بيجيب من السيرفر
-  //   if (userProfile && userProfile._id) {
-  //     dispatch(setAuthUser(userProfile));
-  //   } else if (isError) {
-  //     dispatch(clearAuthUser());
-  //   }
-  //   dispatch(setLoadingAuth(false));
-  // }, [userProfile, isLoading, isSuccess, isError, dispatch]);
+  useEffect(() => {
+    dispatch(setLoadingAuth(true));
+    if (isLoading) return; // لسه بيجيب من السيرفر
+    if (userProfile && userProfile._id) {
+      dispatch(setAuthUser(userProfile));
+    } else if (isError) {
+      dispatch(clearAuthUser());
+    }
+    dispatch(setLoadingAuth(false));
+  }, [userProfile, isLoading, isSuccess, isError, dispatch]);
   // <--- شاشة التحميل الأولية: تظهر أثناء التحقق من المصادقة الأولية
   if (isLoading) {
     return <LoadingPage mode={mode} />;
