@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { use, useState } from "react";
 import {
   Container,
   Box,
@@ -17,13 +17,14 @@ import {  useSelector } from "react-redux";
 import GoogleLogin from "../components/SocialLoginBtns/GoogleLogin";
 import FacebooklogIn from "../components/SocialLoginBtns/FacebookLogin";
 import XLoginButton from "../components/SocialLoginBtns/X-login";
-import { useSigninMutation } from "../Redux/userApi";
+import { useGetUserProfileQuery, useSigninMutation } from "../Redux/userApi";
 
 function SignIn() {
   const { isLoadingAuth } = useSelector(
     // @ts-ignore
     (state) => state.auth
   );
+const {refetch} = useGetUserProfileQuery();
 const [signinMutation] = useSigninMutation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -67,6 +68,7 @@ const [signinMutation] = useSigninMutation();
     try {
       const response = await signinMutation({ email, password }).unwrap();
       setSuccess(response.message);
+      refetch();
       navigate("/", { replace: true });
     } catch (apiError) {
       setLoading(false); // تأكد من إيقاف حالة التحميل

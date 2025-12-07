@@ -19,7 +19,7 @@ export const userApi = createApi({
         method: 'POST',
         body: { email, password },
       }),
-      invalidatesTags: ['User'],
+      // invalidatesTags: ['User'],
     }),
     signup: builder.mutation({
       query: ({ fullName, email, password, confirmPassword }) => ({
@@ -27,7 +27,7 @@ export const userApi = createApi({
         method: 'POST',
         body: { fullName, email, password, confirmPassword },
       }),
-      invalidatesTags: ['User'],
+      // invalidatesTags: ['User'],
     }),
     signOut: builder.mutation({
       query: () => ({
