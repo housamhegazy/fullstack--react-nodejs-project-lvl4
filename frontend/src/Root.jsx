@@ -7,16 +7,21 @@ import getDesignTokens from "./styles/theme";
 import { useEffect, useMemo, useState } from "react";
 import ResponsiveDrawer from "./components/Drawer";
 import { Box } from "@mui/material";
-import { useGetUserProfileQuery } from "./Redux/userApi";
-import { clearAuthUser, setAuthUser, setLoadingAuth } from "./Redux/authSlice";
+// import { useGetUserProfileQuery } from "./Redux/userApi";
+// import { clearAuthUser, setAuthUser, setLoadingAuth } from "./Redux/authSlice";
 import { useDispatch, useSelector } from "react-redux";
 import LoadingPage from "./components/loading/loadingPage";
+import { useGetUserProfileQuery } from "./Redux/userApi";
 
 //drawer width
 const drawerWidth = 240;
 
 const Root = () => {
-    const dispatch = useDispatch();
+  const { isLoadingAuth } = useSelector(
+    // @ts-ignore
+    (state) => state.auth
+  );
+  // const dispatch = useDispatch();
   //open and close drawer functions
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
@@ -55,28 +60,27 @@ const Root = () => {
     localStorage.setItem("localTheme", newMode);
   };
 
-    const {
-      data: userProfile,
-      isLoading,
-      isSuccess,
-      isError,
-    } = useGetUserProfileQuery();
+  const {
+    data: userProfile,
+    isLoading,
+    isSuccess,
+    isError,
+  } = useGetUserProfileQuery();
 
-  
-    // useEffect لتحديث Redux authSlice بناءً على حالة جلب بيانات الملف الشخصي
-    useEffect(() => {
-    dispatch(setLoadingAuth(true));
-    if (isLoading) return; // لسه بيجيب من السيرفر
-    if (userProfile && userProfile._id) {
-      dispatch(setAuthUser(userProfile));
-    } else if (isError) {
-      dispatch(clearAuthUser());
-    }
-    dispatch(setLoadingAuth(false));
-    }, [userProfile, isLoading, isSuccess, isError, dispatch]);
-      // <--- شاشة التحميل الأولية: تظهر أثناء التحقق من المصادقة الأولية
+  // useEffect لتحديث Redux authSlice بناءً على حالة جلب بيانات الملف الشخصي
+  // useEffect(() => {
+  //   dispatch(setLoadingAuth(true));
+  //   if (isLoading) return; // لسه بيجيب من السيرفر
+  //   if (userProfile && userProfile._id) {
+  //     dispatch(setAuthUser(userProfile));
+  //   } else if (isError) {
+  //     dispatch(clearAuthUser());
+  //   }
+  //   dispatch(setLoadingAuth(false));
+  // }, [userProfile, isLoading, isSuccess, isError, dispatch]);
+  // <--- شاشة التحميل الأولية: تظهر أثناء التحقق من المصادقة الأولية
   if (isLoading) {
-    return <LoadingPage mode={mode}/>;
+    return <LoadingPage mode={mode} />;
   }
   return (
     <ThemeProvider theme={theme}>
@@ -112,7 +116,7 @@ const Root = () => {
         >
           <Outlet />
         </Box>
-        <Footer/>
+        <Footer />
       </div>
     </ThemeProvider>
   );

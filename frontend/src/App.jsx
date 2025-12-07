@@ -93,7 +93,7 @@ function App() {
 
   return (
     // @ts-ignore
-    <RouterProvider router={router} fallbackElement={<FetchingdataLoader />} />
+    <RouterProvider router={router}  />
   );
 }
 export default App;

@@ -19,14 +19,15 @@ import axios from "axios"; // استيراد Axios
 import Swal from "sweetalert2";
 import { useGetUserProfileQuery } from "../../Redux/userApi";
 import LoadingPage from "../../components/loading/loadingPage";
+import { useSelector } from "react-redux";
 const Customers = () => {
   const localTheme = localStorage.getItem("localTheme");
   const defaultMode =
     localTheme === null ? "light" : localTheme === "light" ? "light" : "dark";
   //احضرت بيانات المستخدم حتى يتم ارسالها عند طلب عرض بيانات العملاء
-  const { data: user, isLoading, isSuccess } = useGetUserProfileQuery();
+  // const { data: user, isLoading, isSuccess } = useGetUserProfileQuery();
   // const userData = useLoaderData();
-  // const isAuthenticated = useSelector(state => state.auth.isAuthenticated);
+  const {user,isAuthenticated,isLoadingAuth} = useSelector(state => state.auth);
 
   const navigate = useNavigate();
   const [customers, setcustomers] = useState([]); // State to store fetched customers
@@ -60,7 +61,7 @@ const Customers = () => {
 
   // useEffect to call fetchcustomers when the component mounts
   useEffect(() => {
-    if (!user && !isLoading) {
+    if (!user && !isAuthenticated) {
       navigate("/signin", { replace: true });
     }
     fetchcustomers();
