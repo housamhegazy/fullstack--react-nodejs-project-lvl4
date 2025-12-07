@@ -17,10 +17,10 @@ import { useSelector } from "react-redux";
 
 const AppBarComponent = ({ handleDrawerToggle, drawerWidth }) => {
   // @ts-ignore
-  const authState = useSelector((state) => state.auth);
-  const user = authState?.user; // <--- هنا بيانات المستخدم!
-  const isLoadingAuth = authState?.isLoadingAuth; // حالة التحقق الأولي من المصادقة
-  const isAuthenticated = authState?.isAuthenticated;
+  const { user, isAuthenticated, isLoadingAuth } = useSelector(
+    // @ts-ignore
+    (state) => state.auth
+  );
 //===========================================================================
   const navigate = useNavigate();
   const [searchValue, setSearchValue] = useState("");

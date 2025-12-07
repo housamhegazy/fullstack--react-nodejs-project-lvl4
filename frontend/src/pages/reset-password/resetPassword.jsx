@@ -34,6 +34,7 @@ function ResetPassword() {
       try {
         setLoading(true);
         // إرسال طلب للتحقق من صلاحية الرمز في الخادم
+        // @ts-ignore
         await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/reset-password/${token}`);
         setIsTokenValid(true);
       } catch (err) {
@@ -66,6 +67,7 @@ function ResetPassword() {
 
     try {
       // إرسال كلمة المرور الجديدة إلى الخادم
+      // @ts-ignore
       await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/reset-password/${token}`, {
         password,
       });

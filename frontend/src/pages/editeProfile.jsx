@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Container,
   Box,
@@ -14,21 +14,19 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { useGetUserProfileQuery } from "../Redux/userApi"; // Your RTK Query hook
 import Swal from "sweetalert2";
 import { DeleteForever, Edit } from "@mui/icons-material";
+import { useSelector } from "react-redux";
 
 const EditProfile = () => {
   const navigate = useNavigate();
-  const {
-    data: user,
-    isLoading: userLoading,
-    refetch, // ✅ استخراج دالة refetch هنا
-    isError,
-  } = useGetUserProfileQuery(); // Fetch current user
+  const { user, isLoadingAuth } = useSelector(
+    // @ts-ignore
+    (state) => state.auth
+  );
   const [formData, setFormData] = useState({
-    fullName: "",
-    email: "",
+    fullName: user?.fullName || "",
+    email: user?.email || "",
   });
   const [selectedFile, setSelectedFile] = useState(null);
   const [preview, setPreview] = useState(null);
@@ -36,20 +34,6 @@ const EditProfile = () => {
   const [error, setError] = useState("");
   // نفترض أن لديك متغير لحالة التحميل
   const [isDeleting, setIsDeleting] = useState(false);
-
-  // Populate form with current user data
-  useEffect(() => {
-    if (!user && !userLoading) {
-      navigate("/signin", { replace: true });
-    }
-    if (user && !userLoading) {
-      setFormData({
-        fullName: user.fullName || "",
-        email: user.email || "",
-      });
-      setPreview(user.avatar); // Current avatar preview
-    }
-  }, [navigate, user, userLoading]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -103,7 +87,8 @@ const EditProfile = () => {
     }
 
     try {
-      const response = await axios.put(
+      await axios.put(
+        // @ts-ignore
         `${import.meta.env.VITE_BACKEND_URL}/api/users/update-profile`, // Adjust URL
         data,
         {
@@ -112,7 +97,7 @@ const EditProfile = () => {
       );
 
       Swal.fire("Success!", "Profile updated successfully", "success");
-      refetch();
+      // refetch();
       navigate("/profile"); // Redirect to profile or home
     } catch (err) {
       console.error("Update error:", err);
@@ -152,6 +137,7 @@ const EditProfile = () => {
       setIsDeleting(true);
       try {
         const response = await fetch(
+          // @ts-ignore
           `${import.meta.env.VITE_BACKEND_URL}/api/deleteprofilephoto/${userId}`,
           {
             method: "delete",
@@ -163,7 +149,6 @@ const EditProfile = () => {
           console.log(updatedUser.avatar);
           await Swal.fire("Deleted!", "photo deleted successfully", "success");
           setPreview(updatedUser.avatar);
-          refetch();
         } else {
           const errorData = await response.json();
           throw new Error(errorData.message || "failed to delete account");
@@ -181,11 +166,11 @@ const EditProfile = () => {
       }
     }
   };
-  if (userLoading) {
+  if (isLoadingAuth) {
     return <CircularProgress />;
   }
 
-  if (isError) {
+  if (!user || isLoadingAuth) {
     return <Alert severity="error">Error loading user data</Alert>;
   }
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Container,
   Box,
@@ -20,12 +20,10 @@ import FacebooklogIn from "../components/SocialLoginBtns/FacebookLogin";
 import XLoginButton from "../components/SocialLoginBtns/X-login";
 
 function SignIn() {
-  //هنا انا استخدمت ال loader عشان احصل على بيانات المستخدم لكن لو هعمل تحديث بيانات المستخدم في الملف الشخصي ممكن استخدم useGetUserProfileQuery
-  // @ts-ignore
-  const authState = useSelector((state) => state.auth);
-  // const user = authState?.user; // <--- هنا بيانات المستخدم!
-  const isAuthenticated = authState?.isAuthenticated;
-  const isLoadingAuth = authState?.isLoadingAuth;
+  const { user, isAuthenticated, isLoadingAuth } = useSelector(
+    // @ts-ignore
+    (state) => state.auth
+  );
 const [signinMutation] = useSigninMutation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,17 +32,8 @@ const [signinMutation] = useSigninMutation();
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const theme = useTheme();
-  const dispatch = useDispatch();
-  const { refetch } = useGetUserProfileQuery();
 
-  useEffect(() => {
-    // تحقق من أن التحميل الأولي قد انتهى
-    if (!isLoadingAuth && isAuthenticated) {
-      // إذا كان المستخدم مصادقًا عليه، قم بإعادة توجيهه إلى الصفحة الرئيسية
-      console.log("User is authenticated, redirecting from signin page.");
-      navigate("/", { replace: true });
-    }
-  }, [isAuthenticated, isLoadingAuth, navigate]);
+
 
   // دالة بسيطة للتحقق من صحة البريد الإلكتروني
   const validateEmail = (email) => {
@@ -79,8 +68,6 @@ const [signinMutation] = useSigninMutation();
       const response = await signinMutation({ email, password }).unwrap();
       setSuccess(response.message);
       navigate("/", { replace: true });
-      await refetch(); // إعادة جلب بيانات المستخدم بعد تسجيل الدخول الناجح
-      dispatch(setAuthUser({ user: response.user, isAuthenticated: true }));
     } catch (apiError) {
       setLoading(false); // تأكد من إيقاف حالة التحميل
       if (apiError.response) {

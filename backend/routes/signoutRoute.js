@@ -1,7 +1,6 @@
 // routes/authRoutes.js (أو signinRoute.js، حسب تنظيمك)
 const express = require('express');
 const router = express.Router();
-const isAuthenticated = require('../middleware/authMiddleware'); // إذا كنت ترغب في حماية مسار تسجيل الخروج (اختياري)
 
 // مسار تسجيل الخروج
 router.post('', (req, res) => {
@@ -14,7 +13,7 @@ router.post('', (req, res) => {
                 return res.status(500).json({ message: "فشل تسجيل الخروج: حدث خطأ في الخادم." });
             }
             // إزالة ملف تعريف الارتباط (cookie) من المتصفح لضمان تسجيل الخروج الكامل
-            res.clearCookie('connect.sid', { path: '/' }); // تأكد من اسم الكوكي (عادة connect.sid) والـ path
+            res.clearCookie('connect.sid', { path: '/signin' }); // تأكد من اسم الكوكي (عادة connect.sid) والـ path
             // يمكنك إضافة خيارات أخرى للكوكي هنا إذا كانت محددة في إعدادات الجلسة، مثل `domain`, `secure`, `sameSite`
 
             return res.status(200).json({ message: "تم تسجيل الخروج بنجاح." });

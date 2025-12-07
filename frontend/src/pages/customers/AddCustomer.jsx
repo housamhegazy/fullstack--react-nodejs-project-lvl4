@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Container,
   Box,
@@ -16,7 +16,7 @@ import {
 import axios from "axios"; // استيراد Axios
 import Swal from "sweetalert2"; // لاستخدام SweetAlert2
 import { useNavigate } from "react-router-dom";
-import { useGetUserProfileQuery } from "../../Redux/userApi";
+import { useSelector } from "react-redux";
 // قائمة الدول كما كانت في كود EJS
 const country_list = [
   "Afghanistan",
@@ -228,17 +228,10 @@ const country_list = [
 
 function AddCustomer() {
   const navigate = useNavigate(); // تهيئة useNavigate
-  const { data: user, isLoading, isSuccess } = useGetUserProfileQuery();
-  useEffect(() => {
-    if (!user && !isLoading) {
-      navigate("/signin", { replace: true });
-      return;
-    }
-
-    if (isLoading) {
-      return;
-    }
-  }, []);
+    const { user} = useSelector(
+    // @ts-ignore
+    (state) => state.auth
+  );
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",

@@ -10,11 +10,14 @@ import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom';
 import { format, formatDistanceToNow } from 'date-fns'; // لاستخدام تنسيق التاريخ
 import axios from 'axios'; 
-import { useGetUserProfileQuery } from '../../Redux/userApi';
+import { useSelector } from 'react-redux';
 
 
 function View() {
-      const { data: user, isLoading, isSuccess } = useGetUserProfileQuery();
+        const { user, isLoadingAuth } = useSelector(
+    // @ts-ignore
+    (state) => state.auth
+  );
   
   const {customerId} = useParams()
   const [customer, setcustomer] = useState(null); // State to store fetched customers
@@ -28,6 +31,7 @@ function View() {
     setError(null); // Clear previous errors
     try {
       const response = await axios.get(
+        // @ts-ignore
         `${import.meta.env.VITE_BACKEND_URL}/api/allcustomers/${customerId}/${userId}`,
         {
           withCredentials:true
@@ -58,7 +62,7 @@ const navigate = useNavigate()
     }
   }, []); 
 
-  if (loading) {
+  if (loading || isLoadingAuth) {
     return (
       <Box
         sx={{

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Container,
   Box,
@@ -15,16 +15,19 @@ import {
   Alert,
   CircularProgress,
 } from "@mui/material";
-import { Link as RouterLink, useLocation, useNavigate } from "react-router-dom";
+import { Link as RouterLink, useLocation } from "react-router-dom";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import axios from "axios";
-import { useGetUserProfileQuery } from "../../Redux/userApi";
 import Swal from "sweetalert2";
+import { useSelector } from "react-redux";
 
 function Search() {
-  const { data: user, isLoading, isSuccess } = useGetUserProfileQuery();
+  const { user, isLoadingAuth } = useSelector(
+    // @ts-ignore
+    (state) => state.auth
+  );
 
   const location = useLocation(); // لتغيير قيمة البحث في عنوان ال url اثناء تغيير البحث
   const [searchResults, setSearchResults] = useState([]); // نتائج البحث التي تم جلبها من الباك اند
@@ -46,6 +49,7 @@ function Search() {
       const userId = user._id;
       // إذا لم يكن هناك searchTerm، Backend الخاص بك سيعالج ذلك (إرجاع الكل أو لا شيء)
       const response = await axios.get(
+        // @ts-ignore
         `${import.meta.env.VITE_BACKEND_URL}/api/search/${userId}?svalue=${encodeURIComponent(
           searchTerm || ""
         )}`,
@@ -69,13 +73,6 @@ function Search() {
       setLoading(false);
     }
   };
-  const navigate = useNavigate();
-  useEffect(() => {
-    fetchSearchResults();
-    if (!user) {
-      navigate("/signin", { replace: true });
-    }
-  }, [location.search, user]);
 
   // delete function
   const deleteFunc = async (customerId) => {
@@ -94,6 +91,7 @@ function Search() {
     if (result.isConfirmed) {
       const userId = user._id;
       try {
+        // @ts-ignore
         await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/api/deletecustomer/${customerId}/${userId}`, {
           withCredentials: true,
         });
@@ -107,7 +105,7 @@ function Search() {
     }
   };
 
-  if (loading) {
+  if (isLoadingAuth) {
     return (
       <Box
         sx={{

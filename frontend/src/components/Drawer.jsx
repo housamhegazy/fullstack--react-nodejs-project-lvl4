@@ -31,16 +31,12 @@ function ResponsiveDrawer({
   theme,
   handleTheme,
 }) {
-  // const { data: user, error, isLoading, isSuccess } = useGetUserProfileQuery();
-  //هنا انا استخدمت ال loader عشان احصل على بيانات المستخدم لكن لو هعمل تحديث بيانات المستخدم في الملف الشخصي ممكن استخدم useGetUserProfileQuery
-  // const user = useLoaderData();
-  // @ts-ignore
-  const authState = useSelector((state) => state.auth);
-  const user = authState?.user; // <--- هنا بيانات المستخدم!
-  // جلب حالة المصادقة وحالة التحميل الأولية من Redux Store
-  const isAuthenticated = authState?.isAuthenticated;
-  const isLoadingAuth = authState?.isLoadingAuth; // حالة التحقق الأولي من المصادقة
-  const [triggerSignOut, { isLoading: isSigningOut }] = useSignOutMutation();
+  const { isAuthenticated, isLoadingAuth } = useSelector(
+    // @ts-ignore
+    (state) => state.auth
+  );
+  const [triggerSignOut] = useSignOutMutation();
+
   //=================================================================================
   //=================================================================================
   const location = useLocation();
@@ -80,36 +76,43 @@ function ResponsiveDrawer({
     try {
       // استدعاء الـ mutation لتسجيل الخروج. .unwrap() يرمي خطأ إذا فشل الطلب
       await triggerSignOut().unwrap();
-      dispatch(clearAuthUser()); // <--- مسح حالة المستخدم من Redux Store
-      navigate("/signin", { replace: true }); // <--- إعادة التوجيه إلى صفحة تسجيل الدخول
-      handleDrawerClose(); // إغلاق الـ drawer بعد تسجيل الخروج
+      window.location.replace("/signin"); // ✅ بدل navigate
+      setTimeout(() => {
+        dispatch(clearAuthUser());
+      }, 300); // ✅ يمسح بيانات المستخدم من الستور
+      handleDrawerClose();
     } catch (error) {
       console.error("Error during logout:", error);
       // يمكنك هنا إضافة منطق لعرض رسالة خطأ للمستخدم إذا فشل تسجيل الخروج
     }
-
-    //old code
   };
   //drawer content
   const drawer = (
     <div>
-      <Box sx={{height:"80px",display:"flex",justifyContent:"center",alignItems:"center"}}>
+      <Box
+        sx={{
+          height: "80px",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
         <Link
           to="/"
           // underline="none"
           style={{
-            height:"100%",
+            height: "100%",
             fontSize: "1rem",
             color: "inherit",
-            display:"flex",
-            justifyContent:"center",
-            alignItems:"center",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
           }}
         >
           Customer Dashboard
         </Link>
       </Box>
-          <Divider/>
+      <Divider />
       {/* <Toolbar /> */}
       <IconButton
         onClick={handleTheme}
@@ -127,7 +130,7 @@ function ResponsiveDrawer({
             <ListItemText primary="Loading..." />
           </ListItem>
         )}
-        
+
         {isAuthenticated && (
           <>
             {myList.map((item, index) => {

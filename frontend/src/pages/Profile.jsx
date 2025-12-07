@@ -38,10 +38,10 @@ import { useSignOutMutation } from "../Redux/userApi";
 
 const Profile = () => {
   const theme = useTheme();
-  // @ts-ignore
-  const authState = useSelector((state) => state.auth);
-  const user = authState?.user; // <--- هنا بيانات المستخدم!
-  const isLoadingAuth = authState?.isLoadingAuth; // حالة التحقق الأولي من المصادقة
+  const { user, isAuthenticated, isLoadingAuth } = useSelector(
+    // @ts-ignore
+    (state) => state.auth
+  );
   const [triggerSignOut] = useSignOutMutation();
 
   const [error, setError] = useState("");
@@ -50,12 +50,6 @@ const Profile = () => {
 
   // إذا لم يكن هناك مستخدم بعد التحميل وعدم وجود أخطاء
   const navigate = useNavigate();
-  useEffect(() => {
-    if (!user && !isLoadingAuth) {
-      navigate("/signin", { replace: true });
-    }
-  }, [isLoadingAuth, navigate, user]);
-
   const localTheme = localStorage.getItem("localTheme");
   const defaultMode =
     localTheme === null ? "light" : localTheme === "light" ? "light" : "dark";
