@@ -13,6 +13,22 @@ export const userApi = createApi({
       providesTags: ['User'],
     }),
     // <--- هذا هو الجزء الذي يجب أن يكون موجودًا
+    signin: builder.mutation({
+      query: ({ email, password }) => ({
+        url: '/api/signin',
+        method: 'POST',
+        body: { email, password },
+      }),
+      invalidatesTags: ['User'],
+    }),
+    signup: builder.mutation({
+      query: ({ fullName, email, password, confirmPassword }) => ({
+        url: '/api/register',
+        method: 'POST',
+        body: { fullName, email, password, confirmPassword },
+      }),
+      invalidatesTags: ['User'],
+    }),
     signOut: builder.mutation({
       query: () => ({
         url: '/api/signout',
@@ -25,5 +41,5 @@ export const userApi = createApi({
 
 // Export hooks for usage in functional components, which are
 // auto-generated based on the defined endpoints
-export const { useGetUserProfileQuery, useSignOutMutation } = userApi
+export const { useGetUserProfileQuery, useSigninMutation,useSignupMutation, useSignOutMutation } = userApi
 

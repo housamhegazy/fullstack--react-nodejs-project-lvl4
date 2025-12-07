@@ -72,7 +72,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // ********************** استخدام المسارات والميدل ويرز **********************
-app.use("/register", registerRoute);
+app.use("/api/register", registerRoute);
 app.use("/api/signin", signinRoute);
 app.use("/api/signout", signoutRoute);
 

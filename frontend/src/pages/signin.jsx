@@ -12,10 +12,9 @@ import {
 } from "@mui/material";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { setAuthUser } from "../Redux/authSlice";
-import { useGetUserProfileQuery } from "../Redux/userApi";
+import { useGetUserProfileQuery, useSigninMutation } from "../Redux/userApi";
 import GoogleLogin from "../components/SocialLoginBtns/GoogleLogin";
 import FacebooklogIn from "../components/SocialLoginBtns/FacebookLogin";
 import XLoginButton from "../components/SocialLoginBtns/X-login";
@@ -27,7 +26,7 @@ function SignIn() {
   // const user = authState?.user; // <--- هنا بيانات المستخدم!
   const isAuthenticated = authState?.isAuthenticated;
   const isLoadingAuth = authState?.isLoadingAuth;
-
+const [signinMutation] = useSigninMutation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -77,30 +76,11 @@ function SignIn() {
     }
 
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/api/signin`,
-        {
-          email,
-          password,
-        },
-        { withCredentials: true }
-      );
-
-      // إذا كانت الاستجابة JSON:
-      if (response.data.message) {
-        setSuccess(response.data.message);
-        const userData = response.data.user; // تأكد من أن السيرفر يرسل بيانات المستخدم هنا
-        dispatch(setAuthUser(userData)); // <--- تحديث Redux Auth State
-        await refetch(); // إعادة جلب بيانات المستخدم من الباكند
-        // تأخير بسيط لرؤية رسالة النجاح قبل التنقل
-        navigate("/");
-        // تسجيل الدخول ناجح
-      } else {
-        setSuccess("successfully registered");
-        // إذا لم تكن هناك رسالة، يمكن افتراض رسالة افتراضي
-        await refetch(); // إعادة جلب بيانات المستخدم من الباكند
-        navigate("/");
-      }
+      const response = await signinMutation({ email, password }).unwrap();
+      setSuccess(response.message);
+      navigate("/", { replace: true });
+      await refetch(); // إعادة جلب بيانات المستخدم بعد تسجيل الدخول الناجح
+      dispatch(setAuthUser({ user: response.user, isAuthenticated: true }));
     } catch (apiError) {
       setLoading(false); // تأكد من إيقاف حالة التحميل
       if (apiError.response) {

@@ -11,12 +11,12 @@ import {
 } from "@mui/material";
 import AppRegistrationOutlinedIcon from "@mui/icons-material/AppRegistrationOutlined"; // أيقونة للتسجيل
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
-import { useGetUserProfileQuery } from "../Redux/userApi";
+import { useGetUserProfileQuery, useSignupMutation } from "../Redux/userApi";
 import { setAuthUser } from "../Redux/authSlice";
 
 function SignUp() {
+  const [signupMutation] = useSignupMutation();
   // @ts-ignore
   const authState = useSelector((state) => state.auth);
   //===========================================================================
@@ -43,7 +43,7 @@ function SignUp() {
     if (!isLoadingAuth && isAuthenticated) {
       // إذا كان المستخدم مصادقًا عليه، قم بإعادة توجيهه إلى الصفحة الرئيسية
       console.log("User is authenticated, redirecting from signin page.");
-      navigate("/",{ replace: true });
+      navigate("/", { replace: true });
     }
   }, [isAuthenticated, isLoadingAuth, navigate]);
 
@@ -80,24 +80,15 @@ function SignUp() {
     }
 
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/register`, {
+      const response = await signupMutation({
         fullName,
         email,
         password,
         confirmPassword,
-      });
-
-      // إذا كانت الاستجابة JSON:
-      if (response.data.message) {
-        setSuccess(response.data.message);
-        dispatch(setAuthUser(response.data)); // <--- تحديث Redux Auth State
-        await refetch();
-      } else {
-        setSuccess("successfully registered");
-        await refetch(); // إعادة جلب بيانات المستخدم من الباكند
-      }
-
+      }).unwrap();
+      setSuccess(response.message);
+      dispatch(setAuthUser({ user: response.user, isAuthenticated: true })); // <--- تحديث Redux Auth State
+      await refetch();
       setTimeout(() => {
         navigate("/");
       }, 1500); // تأخير بسيط قبل إعادة التوجيه
