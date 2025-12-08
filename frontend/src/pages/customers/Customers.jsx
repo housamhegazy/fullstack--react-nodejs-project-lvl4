@@ -40,6 +40,7 @@ const Customers = () => {
     setLoading(true);
     setError(null); // Clear previous errors
     try {
+      console.log("FULL URL = ", `${import.meta.env.VITE_BACKEND_URL}/api/allcustomers/${userId}`);
       const response = await axios.get(
         // @ts-ignore
         `${import.meta.env.VITE_BACKEND_URL}/api/allcustomers/${userId}`,
