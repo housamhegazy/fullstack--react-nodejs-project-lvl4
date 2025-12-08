@@ -42,7 +42,7 @@ app.use(bodyParser.json()); // يسمح لـ Express بقراءة JSON في body
 app.use(bodyParser.urlencoded({ extended: true })); // لقراءة بيانات النموذج المشفرة
 
 // ********************** اعداد الجلسات و Passport.js **********************
-
+app.set('trust proxy', 1)
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "your_session_secret_key",
@@ -52,8 +52,8 @@ app.use(
     store: MongoStore.create(
       {
         mongoUrl: process.env.MONGODB_URI,
-        mongoOptions: { useUnifiedTopology: true },
-         ttl : 24 * 60 * 60, // وقت الجلسة بالثواني (يوم واحد)
+        // mongoOptions: { useUnifiedTopology: true },
+        //  ttl : 24 * 60 * 60, // وقت الجلسة بالثواني (يوم واحد)
       },
       (err) => {
         if (err) console.error("MongoStore error:", err);
