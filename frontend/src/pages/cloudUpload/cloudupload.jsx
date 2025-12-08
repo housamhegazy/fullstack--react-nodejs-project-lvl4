@@ -424,7 +424,9 @@ const CloudinarUploud = () => {
       });
     }
   };
-
+if (userLoading) {
+    return <div>Loading...</div>;
+  }
   return (
     <CloudUploadView
       {...{

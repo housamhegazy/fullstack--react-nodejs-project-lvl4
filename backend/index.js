@@ -86,7 +86,7 @@ app.use("", isAuthenticated, userRoute);
 app.use("", isAuthenticated, mainRoute);
 app.use("", isAuthenticated, customersRoute);
 app.use("", isAuthenticated, cloudUploadRoute);
-app.use("", isAuthenticated, searchRoute);
+app.use("/api", isAuthenticated, searchRoute);
 
 // ********************** الاتصال بـ MongoDB **********************
 

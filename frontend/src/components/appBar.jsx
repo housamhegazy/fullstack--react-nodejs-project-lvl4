@@ -92,7 +92,7 @@ const AppBarComponent = ({ handleDrawerToggle, drawerWidth }) => {
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
-                mr: 6,
+                mr: 2,
 
                 // قد تحتاج لضبط الهوامش أو العرض هنا لتناسب التصميم العام للـ AppBar
               }}

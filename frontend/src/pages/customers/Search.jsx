@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Container,
   Box,
@@ -73,7 +73,9 @@ function Search() {
       setLoading(false);
     }
   };
-
+useEffect(() => {
+  fetchSearchResults();
+}, [location.search]); 
   // delete function
   const deleteFunc = async (customerId) => {
     // عرض رسالة التأكيد من SweetAlert2
@@ -121,6 +123,19 @@ function Search() {
       </Box>
     );
   }
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center", 
+          alignItems: "center",
+          height: "80vh",
+          flexDirection: "column",
+        }}
+      >loading...</Box>
+  );}
+
   return (
     <Container component="main" maxWidth="lg" sx={{ py: 4 }}>
       <Box

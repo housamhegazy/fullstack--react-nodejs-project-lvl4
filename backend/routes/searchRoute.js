@@ -7,7 +7,7 @@ const {handleError} = require("../utils/errorMiddleware");
 
 
 //search function
-router.get("/api/search/:userId", async (req, res) => {
+router.get("/search/:userId", async (req, res) => {
   try {
     const searchValue = req.query.svalue;
     if (!searchValue || searchValue.trim() === "") {
