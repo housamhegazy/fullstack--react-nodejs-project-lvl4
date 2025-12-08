@@ -52,8 +52,8 @@ app.use(
     store: MongoStore.create(
       {
         mongoUrl: process.env.MONGODB_URI,
-        // mongoOptions: { useUnifiedTopology: true },
-        //  ttl : 24 * 60 * 60, // وقت الجلسة بالثواني (يوم واحد)
+        mongoOptions: { useUnifiedTopology: true },
+         ttl : 24 * 60 * 60, // وقت الجلسة بالثواني (يوم واحد)
       },
       (err) => {
         if (err) console.error("MongoStore error:", err);

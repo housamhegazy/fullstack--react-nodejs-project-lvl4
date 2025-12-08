@@ -34,9 +34,9 @@ const Customers = () => {
   // Function to fetch all customers
   const fetchcustomers = async () => {
     const userId = user?._id;
-    if (!userId) {
-      return;
-    }
+    // if (!userId) {
+    //   return;
+    // }
     setLoading(true);
     setError(null); // Clear previous errors
     try {
