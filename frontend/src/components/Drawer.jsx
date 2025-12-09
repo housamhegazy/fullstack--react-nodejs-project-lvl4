@@ -12,7 +12,6 @@ import {
   DarkMode,
   GroupAdd,
   Logout,
-  Settings,
   Sunny,
   UploadFile,
 } from "@mui/icons-material";
@@ -48,27 +47,27 @@ function ResponsiveDrawer({
   const myList = [
     {
       title: "profile",
-      icon: <AccountBoxIcon color={iconColor} />,
+      icon: <AccountBoxIcon color={iconColor} sx={{fontSize:{xs:"18px",sm:"20px"}}} />,
       pathname: "/profile",
     },
     {
       title: "Customers",
-      icon: <HomeIcon color={iconColor} />,
+      icon: <HomeIcon color={iconColor} sx={{fontSize:{xs:"18px",sm:"20px"}}} />,
       pathname: "/",
     },
     {
       title: "Add Customer",
-      icon: <GroupAdd color={iconColor} />,
+      icon: <GroupAdd color={iconColor} sx={{fontSize:{xs:"18px",sm:"20px"}}} />,
       pathname: "/addCustomer",
     },
     {
       title: "Local Upload",
-      icon: <UploadFile color={iconColor} />,
+      icon: <UploadFile color={iconColor} sx={{fontSize:{xs:"18px",sm:"20px"}}} />,
       pathname: "/localupload",
     },
     {
       title: "Cloudinary Upload",
-      icon: <Cloud color={iconColor} />,
+      icon: <Cloud color={iconColor} sx={{fontSize:{xs:"18px",sm:"20px"}}} />,
       pathname: "/cloudupload",
     },
   ];
@@ -151,7 +150,7 @@ function ResponsiveDrawer({
                 >
                   <ListItemButton>
                     <ListItemIcon>{item.icon}</ListItemIcon>
-                    <ListItemText primary={item.title} />
+                    <ListItemText primary={item.title}/>
                   </ListItemButton>
                 </ListItem>
               );

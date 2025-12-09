@@ -96,11 +96,14 @@ const CloudUploadView = ({
           flexDirection: "column",
           justifyContent: "center",
           alignItems: "center",
+          fontSize: { xs: "1.1rem", sm: "2rem"  },
+          color: "text.primary",
+          mt: { xs: 1, sm: 4 },
         }}
       >
         {" "}
         <Cloud
-          sx={{ ml: 2, fontSize: 70, color: theme.palette.primary.light }}
+          sx={{ ml: 2, fontSize: { xs: 40, sm: 70 }, color: theme.palette.primary.light }}
         />
         Cloudinary Upload
       </Typography>
@@ -112,15 +115,15 @@ const CloudUploadView = ({
           justifyContent: "center",
           alignItems: "center",
           flexWrap: "wrap",
-          gap: 4,
-          p: 3,
+          gap: {xs: 2, md: 6},
+          p: { xs: 1, md: 4},
         }}
       >
         {/* Upload one image */}
         <Box
           sx={{
             width: 300, // تحديد عرض ثابت
-            p: 3,
+            p: {xs:1, md:3},
             borderRadius: 2, // حواف دائرية
             border: "2px solid", // حافة خفيفة
             borderColor: "secondary.main",
@@ -131,7 +134,7 @@ const CloudUploadView = ({
             textAlign: "center",
           }}
         >
-          <Typography variant="h6" gutterBottom color="secondary">
+          <Typography sx={{fontSize: { xs: 15, sm: 20 }}} variant="h6" gutterBottom color="secondary">
             Only one photo
           </Typography>
           <Grid sx={{ textAlign: "center", mb: 2 }}>
@@ -216,7 +219,7 @@ const CloudUploadView = ({
             textAlign: "center",
           }}
         >
-          <Typography variant="h6" gutterBottom color="success.main">
+          <Typography sx={{fontSize: { xs: 15, sm: 20 }}} variant="h6" gutterBottom color="success.main">
             upload Images(Gallery)
           </Typography>
           <Grid sx={{ textAlign: "center", mb: 2 }}>
@@ -287,11 +290,11 @@ const CloudUploadView = ({
           component="span"
           sx={{
             color: "text.secondary",
-            fontWeight: 400,
+            fontWeight: 200,
             px: 3,
             fontSize: {
-              xs: "1.5rem",
-              sm: "2rem",
+              xs: "1.1rem",
+              sm: "1.5rem",
             },
             backgroundColor: "background.paper",
           }}
@@ -319,7 +322,7 @@ const CloudUploadView = ({
                   onClick={handleClick}
                   variant="contained"
                   color="primary" // يمكنك استخدام لون مختلف لتمييزه كزر خيارات
-                  sx={{ borderRadius: 2, py: 1 }}
+                  sx={{ borderRadius: 2, px: "2px" ,fontSize: { xs: 9, sm: 16 }, textTransform:"none" }}
                   endIcon={<KeyboardArrowDown />} // إضافة أيقونة للإشارة إلى قائمة منسدلة
                 >
                   Gallery Options
@@ -342,6 +345,7 @@ const CloudUploadView = ({
                     sx={{
                       color: "error.main", // تلوين النص باللون الأحمر
                       fontWeight: "bold",
+                      fontSize: { xs: 12, sm: 16 }
                     }}
                   >
                     {deletingAll ? (
@@ -353,11 +357,11 @@ const CloudUploadView = ({
                     ) : (
                       <Delete sx={{ mr: 1 }} />
                     )}
-                    {deletingAll ? "Deleting All..." : "Delete All Photos"}
+                    {deletingAll ? "Deleting All..." : "Delete All"}
                   </MenuItem>
 
                   {/* يمكنك إضافة خيارات أخرى هنا: */}
-                  <MenuItem onClick={handleDownloadAllAndClose}>
+                  <MenuItem sx={{fontSize: { xs: 12, sm: 16 }}} onClick={handleDownloadAllAndClose}>
                     <CloudDownload sx={{ mr: 1 }} /> Download All
                   </MenuItem>
                 </Menu>
@@ -367,12 +371,13 @@ const CloudUploadView = ({
                 sx={{ display: "flex", justifyContent: "flex-start", mb: 3 }}
               >
                 {/* ⭐️ قائمة الفرز (Select Component) */}
-                <FormControl sx={{ minWidth: 200 }} size="small">
-                  <InputLabel id="sort-label">Order photos by </InputLabel>
+                <FormControl sx={{ minWidth: {xs:100,sm:150} }} size="small">
+                  <InputLabel sx={{fontSize: { xs: 12, sm: 16 }}} id="sort-label">Order photos by </InputLabel>
                   <Select
                     labelId="sort-label"
                     value={sortOrder} // القيمة الحالية ('desc' أو 'asc')
                     label="Order photos by"
+                    sx={{fontSize: { xs: 12, sm: 16 }}}
                     onChange={(e) => {
                       const newOrder = e.target.value;
                       setSortOrder(newOrder); // تحديث الـ State
@@ -380,10 +385,10 @@ const CloudUploadView = ({
                     }}
                   >
                     {/* 1. الأحدث أولاً (تنازلي: Newest) */}
-                    <MenuItem value={"desc"}>Newest First</MenuItem>
+                    <MenuItem sx={{fontSize: { xs: 12, sm: 16 }}} value={"desc"}>Newest First</MenuItem>
 
                     {/* 2. الأقدم أولاً (تصاعدي: Oldest) */}
-                    <MenuItem value={"asc"}> Oldest First</MenuItem>
+                    <MenuItem sx={{fontSize: { xs: 12, sm: 16 }}} value={"asc"}> Oldest First</MenuItem>
                   </Select>
                 </FormControl>
               </Box>
@@ -398,17 +403,17 @@ const CloudUploadView = ({
           )}
           {/***************************** photos section  ***************************/}
           <ImageList
-            sx={{ width: "100%" }}
-            cols={getCols()} // هذا هو الاستخدام الصحيح
+            sx={{ width: "100%", margin: "0 auto" }}
+            cols={getCols()} 
             rowHeight={200}
-            gap={7}
+            gap={2}
           >
             {allImgs &&
               allImgs.map((img) => {
                 // 1. ✅ تحقق مما إذا كانت هذه الصورة هي قيد الحذف
                 const isDeleting = deletingId === img.public_id;
                 return (
-                  <Box key={img.public_id}>
+                  <Box key={img.public_id} >
                     <ImageListItem
                       sx={{ cursor: "pointer" }}
                       onClick={() => handleOpenImageDialog(img)}

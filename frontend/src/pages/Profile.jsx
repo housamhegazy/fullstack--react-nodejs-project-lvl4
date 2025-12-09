@@ -38,7 +38,7 @@ import { useSignOutMutation } from "../Redux/userApi";
 
 const Profile = () => {
   const theme = useTheme();
-  const { user,  isLoadingAuth } = useSelector(
+  const { user, isLoadingAuth } = useSelector(
     // @ts-ignore
     (state) => state.auth
   );
@@ -93,7 +93,9 @@ const Profile = () => {
       try {
         const userId = user._id;
         const response = await fetch(
-          `${import.meta.env.VITE_BACKEND_URL}/api/deleteuser/${user && userId}`,
+          `${import.meta.env.VITE_BACKEND_URL}/api/deleteuser/${
+            user && userId
+          }`,
           {
             method: "delete",
             credentials: "include",
@@ -118,8 +120,8 @@ const Profile = () => {
 
   if (user) {
     return (
-      <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
-        <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
+      <Container maxWidth="md" sx={{ mt: 2, mb: 2 }}>
+        <Paper elevation={3} sx={{ p: 2, borderRadius: 2 }}>
           <IconButton
             color={defaultMode == "dark" ? "secondary" : "primary"}
             aria-label="edit profile"
@@ -140,8 +142,8 @@ const Profile = () => {
           >
             <Avatar
               sx={{
-                width: 100,
-                height: 100,
+                width: {xs: 50, sm: 100 },
+                height: {xs: 50, sm: 100 },
                 bgcolor: "primary.main",
                 mb: 2,
                 objectFit: "cover",
@@ -160,12 +162,18 @@ const Profile = () => {
               variant="h4"
               component="h1"
               gutterBottom
-              sx={{ color: "inherit" }}
+              sx={{
+                color: "inherit",
+                fontSize: { xs: "1rem", sm: "1rem" },
+              }}
             >
-              {user.fullName || " unavaliable"}
+              {user.fullName || " unavailable"}
             </Typography>
-            <Typography variant="body1" color="text.secondary">
-              ID: {user._id}
+            <Typography
+              sx={{ fontSize: { xs: "12px", sm: "1rem" } }}
+              color="text.secondary"
+            >
+              Email: {user.email}
             </Typography>
           </Box>
 
@@ -174,31 +182,35 @@ const Profile = () => {
           <List>
             <ListItem>
               <ListItemIcon>
-                <EmailIcon color="action" />
+                <CalendarTodayIcon
+                  sx={{ fontSize: { xs: "1rem", sm: "1rem" } }}
+                  color="action"
+                />
               </ListItemIcon>
               <ListItemText
-                primary="email "
-                secondary={user.email || "unavailable"}
-              />
-            </ListItem>
-            <Divider variant="inset" component="li" />{" "}
-            {/* خط فاصل تحت كل عنصر */}
-            <ListItem>
-              <ListItemIcon>
-                <CalendarTodayIcon color="action" />
-              </ListItemIcon>
-              <ListItemText
-                primary="تاريخ التسجيل"
+                primary=" registered on"
                 secondary={format(new Date(user.createdAt), "PP")}
+                //  primary and secondary text font size responsive
+                sx={{
+                  "& .MuiListItemText-primary": {
+                    fontSize: { xs: "1rem", sm: "1rem" }, // حجم primary
+                  },
+                  "& .MuiListItemText-secondary": {
+                    fontSize: { xs: "0.8rem", sm: "1rem" }, // حجم secondary
+                  },
+                }}
               />
             </ListItem>
             <Divider variant="inset" component="li" />
             <ListItem>
               <ListItemIcon>
-                <AccessTimeIcon color="action" />
+                <AccessTimeIcon
+                  sx={{ fontSize: { xs: "1rem", sm: "2.125rem" } }}
+                  color="action"
+                />
               </ListItemIcon>
               <ListItemText
-                primary="آخر تسجيل دخول"
+                primary="  last login"
                 secondary={formatDistanceToNow(new Date(user.lastLogin), {
                   addSuffix: true,
                 })}
@@ -210,9 +222,12 @@ const Profile = () => {
                 <Divider variant="inset" component="li" />
                 <ListItem>
                   <ListItemIcon>
-                    <PersonIcon color="action" />
+                    <PersonIcon
+                      sx={{ fontSize: { xs: "1rem", sm: "2.125rem" } }}
+                      color="action"
+                    />
                   </ListItemIcon>
-                  <ListItemText primary="الدور" secondary={user.role} />
+                  <ListItemText primary="Role" secondary={user.role} />
                 </ListItem>
               </>
             )}
@@ -223,7 +238,7 @@ const Profile = () => {
           <Divider sx={{ mb: 2, fontWeight: "bold" }} />
           {/* قسم الحسابات المرتبطة */}
           <Box sx={{ width: "100%", mb: 4 }}>
-            <Typography variant="h6" sx={{ mb: 2 }}>
+            <Typography variant="h6" sx={{ mb: 2 ,fontSize: { xs: "1rem", sm: "1.2rem" } }}>
               Linked Accounts
             </Typography>
 
@@ -255,9 +270,9 @@ const Profile = () => {
           {/* زر لإدارة الحسابات (اختياري) */}
 
           <Button
-            variant="contained"
+            variant="outlined"
             color="error"
-            sx={{ mt: 2, py: 1.5, borderRadius: 2 }}
+            sx={{ mt: 1, py: 1, borderRadius: 2, fontSize: { xs: "0.8rem", sm: "1rem" } }}
             onClick={() => handleDeleteUser()}
           >
             {loading ? (

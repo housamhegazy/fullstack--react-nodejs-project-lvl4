@@ -2,8 +2,10 @@ import {
   Alert,
   Box,
   Button,
+  Divider,
   IconButton,
   Paper,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import { useEffect, useState } from "react";
@@ -178,16 +180,20 @@ const Customers = () => {
         {" "}
         All Customers
       </Typography>
-      <Button
-        variant="contained"
+
+    {/* delete all */}
+    <Tooltip title="Delete All Customers">
+      <IconButton
+        // variant="contained"
         color="error"
-        sx={{ float: "right", mb: "20px", textTransform: "lowerCase" }}
+        sx={{ float: "right", mb: "20px", textTransform: "lowerCase",fontSize:"12px" }}
         onClick={() => {
           handledeleteAll();
         }}
       >
-        delete all
-      </Button>
+        <Delete /> 
+      </IconButton>
+    </Tooltip>
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }} aria-label="caption table">
           <caption>housam hegazy 2025</caption>
@@ -195,7 +201,7 @@ const Customers = () => {
             <TableRow>
               <TableCell align="center">Name</TableCell>
               <TableCell align="center">Age</TableCell>
-              <TableCell align="center">Phone Number</TableCell>
+              <TableCell align="center">Phone</TableCell>
               <TableCell align="center">Country</TableCell>
               <TableCell align="center">Email</TableCell>
               <TableCell align="center">Action</TableCell>

@@ -368,7 +368,7 @@ function AddCustomer() {
           mt: 4, // margin-top
         }}
       >
-        <Typography component="h1" variant="h4" sx={{ mb: 3 }}>
+        <Typography component="h4" sx={{ mb: 3 }}>
           Add New Customer
         </Typography>
         {error && (

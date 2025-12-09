@@ -112,7 +112,8 @@ const AppBarComponent = ({ handleDrawerToggle, drawerWidth }) => {
                 InputLabelProps={{
                   sx: {
                     color: "white", // <--- Custom color for the label
-                    fontWeight: "bold",
+                    // fontWeight: "bold",
+                    fontSize: { xs: "0.8rem", sm: "1rem" },
                     // You can also style different states, e.g., when focused:
                     // '&.Mui-focused': {
                     //   color: 'darkblue',
@@ -135,7 +136,7 @@ const AppBarComponent = ({ handleDrawerToggle, drawerWidth }) => {
                         edge="end"
                         sx={{ mr: -1.5 }} // لضبط المسافة بين الأيقونة وحافة حقل النص
                       >
-                        <Search /> {/* أيقونة البحث */}
+                        <Search sx={{ fontSize: { xs: "0.8rem", sm: "1rem" } }} /> {/* أيقونة البحث */}
                       </IconButton>
                     </InputAdornment>
                   ),
@@ -145,9 +146,10 @@ const AppBarComponent = ({ handleDrawerToggle, drawerWidth }) => {
                   "& .MuiInputBase-input": {
                     color: "white", // Or any color you want
                     opacity: 1, // To ensure it's not faded out (default browser behavior)
+                    fontSize: { xs: "0.8rem", sm: "1rem" }, // Adjust font size for responsiveness
                   },
                   margin:"5px 0",
-                  width: { xs: "150px", sm: "150px", md: "250px" }, // مثال لتعديل العرض
+                  width: { xs: "120px", sm: "150px", md: "250px" }, // مثال لتعديل العرض
 
                 }}
               />

@@ -104,10 +104,9 @@ const Root = () => {
           sx={{
             ml: { sm: `${drawerWidth}px` },
             width: { sm: `calc(100% - ${drawerWidth}px)` },
-            p: 3,
+            p: {xs:1, sm:3},
             minHeight: "calc(100vh - 64px)",
-            padding: "20px",
-            marginTop: "20px",
+            marginTop: { xs: "10px", sm: "20px" },
             flex: 1,
           }}
         >
