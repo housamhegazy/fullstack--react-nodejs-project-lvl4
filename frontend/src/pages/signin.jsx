@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import { Link, useNavigate } from "react-router-dom";
-import {  useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 
 import GoogleLogin from "../components/SocialLoginBtns/GoogleLogin";
 import FacebooklogIn from "../components/SocialLoginBtns/FacebookLogin";
@@ -24,7 +24,7 @@ function SignIn() {
     // @ts-ignore
     (state) => state.auth
   );
-const [signinMutation] = useSigninMutation();
+  const [signinMutation] = useSigninMutation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -32,8 +32,6 @@ const [signinMutation] = useSigninMutation();
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const theme = useTheme();
-
-
 
   // دالة بسيطة للتحقق من صحة البريد الإلكتروني
   const validateEmail = (email) => {
