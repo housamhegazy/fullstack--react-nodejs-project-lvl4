@@ -30,7 +30,7 @@ const GoogleLogin = () => {
           boxShadow: '0 2px 4px 0 rgba(0,0,0,.15)',
         }}
       >
-        <Typography component="span" sx={{ ml: 1 }}>
+        <Typography component="span" sx={{ ml: 1 ,fontSize: { xs: "0.7rem", sm: "1rem" }}}>
           Google Login
         </Typography>
       </Button>
