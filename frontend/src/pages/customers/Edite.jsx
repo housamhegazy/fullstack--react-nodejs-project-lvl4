@@ -260,7 +260,7 @@ function Edite() {
     setError(null);
     setLoading(true);
     try {
-      const response = await axios.get(`http://localhost:3000/api/edit/${id}`, {
+      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/edit/${id}`, {
         headers: { Authorization: `Bearer ${user.token}` },
       });
       setcustomer(response.data);
@@ -344,7 +344,7 @@ function Edite() {
     }
     try {
       await axios.put(
-        `http://localhost:3000/api/editcustomer/${id}`,
+        `${import.meta.env.VITE_BACKEND_URL}/api/editcustomer/${id}`,
         customer,
         {
           
