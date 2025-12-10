@@ -103,7 +103,7 @@ const Root = () => {
             ml: { sm: `${drawerWidth}px` },
             width: { sm: `calc(100% - ${drawerWidth}px)` },
             p: {xs:1, sm:3},
-            minHeight: "calc(100vh - 64px)",
+            minHeight: "calc(100vh - 294px)",
             marginTop: { xs: "10px", sm: "20px" },
             flex: 1,
           }}

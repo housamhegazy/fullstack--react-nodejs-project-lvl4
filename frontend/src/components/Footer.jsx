@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Container, Typography, Link, Divider, Grid } from "@mui/material";
+import { Box, Container, Typography, Divider, Link } from "@mui/material";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import TwitterIcon from "@mui/icons-material/Twitter";
 import InstagramIcon from "@mui/icons-material/Instagram";
@@ -9,11 +9,11 @@ const Footer = () => {
     <Box
       component="footer"
       sx={{
-        
         py: 3,
         px: 2,
         ml: { sm: "240px" },
         mt: "auto",
+        minHeight: "230px",
         backgroundColor: (theme) =>
           theme.palette.mode === "dark"
             ? theme.palette.primary.main
@@ -30,11 +30,17 @@ const Footer = () => {
             justifyContent: "space-between",
             alignItems: "flex-start",
             gap: 4,
+            paddingTop: "20px",
           }}
         >
           {/* About Section */}
           <Box sx={{ flex: 1 }}>
-            <Typography variant="h6" color="text.primary" gutterBottom>
+            <Typography
+              sx={{ fontSize: { xs: "14px", sm: "18px" } }}
+              variant="h6"
+              color="text.primary"
+              gutterBottom
+            >
               About Us
             </Typography>
             <Typography variant="body2" color="text.secondary">
@@ -43,28 +49,73 @@ const Footer = () => {
           </Box>
           {/* Links Section */}
           <Box sx={{ flex: 1 }}>
-            <Typography variant="h6" color="text.primary" gutterBottom>
+            <Typography
+              sx={{
+                fontSize: { xs: "14px", sm: "18px" },
+              }}
+              variant="h6"
+              color="text.primary"
+              gutterBottom
+            >
               Quick Links
             </Typography>
-            <Link href="#" color="text.secondary" display="block">
+            <Link
+              sx={{
+                fontSize: { xs: "14px", sm: "18px" },
+                display: "block",
+                color: "white",
+                "&:hover": {
+                  color: "#90caf9", // اللون اللي انت عايزه في الهوفر
+                },
+              }}
+              href="/"
+              display="block"
+            >
               Home
             </Link>
-            <Link href="#" color="text.secondary" display="block">
+            <Link
+              sx={{
+                fontSize: { xs: "14px", sm: "18px" },
+                display: "block",
+                color: "white",
+                "&:hover": {
+                  color: "#90caf9", // اللون اللي انت عايزه في الهوفر
+                },
+              }}
+              href="/"
+              display="block"
+            >
               About
             </Link>
-            <Link href="#" color="text.secondary" display="block">
+            <Link
+              sx={{
+                fontSize: { xs: "14px", sm: "18px" },
+                display: "block",
+                color: "white",
+                "&:hover": {
+                  color: "#90caf9", // اللون اللي انت عايزه في الهوفر
+                },
+              }}
+              href="/"
+              display="block"
+            >
               Contact
             </Link>
           </Box>
           {/* Social Media Section */}
           <Box sx={{ flex: 1 }}>
-            <Typography variant="h6" color="text.primary" gutterBottom>
+            <Typography
+              sx={{ fontSize: { xs: "14px", sm: "18px" } }}
+              variant="h6"
+              color="text.primary"
+              gutterBottom
+            >
               Follow Us
             </Typography>
-            <Link href="#" color="inherit" sx={{ mr: 1 }}>
+            <Link href="#" color="inherit" style={{ marginRight: 1 }}>
               <FacebookIcon />
             </Link>
-            <Link href="#" color="inherit" sx={{ mr: 1 }}>
+            <Link href="#" color="inherit" style={{ marginRight: 1 }}>
               <TwitterIcon />
             </Link>
             <Link href="#" color="inherit">
@@ -76,7 +127,7 @@ const Footer = () => {
         <Box mt={5}>
           <Typography variant="body2" color="text.secondary" align="center">
             {"© "}
-            {new Date().getFullYear()} {"Your Company Name."}
+            {new Date().getFullYear()} {"Housam Hegazy. All rights reserved."}
           </Typography>
         </Box>
       </Container>

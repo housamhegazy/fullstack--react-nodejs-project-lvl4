@@ -404,7 +404,7 @@ const CloudUploadView = ({
           {/***************************** photos section  ***************************/}
           <ImageList
             sx={{ width: "100%", margin: "0 auto" }}
-            cols={getCols()} 
+            cols={getCols() } 
             rowHeight={200}
             gap={2}
           >

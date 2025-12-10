@@ -193,7 +193,7 @@ const Profile = () => {
                 //  primary and secondary text font size responsive
                 sx={{
                   "& .MuiListItemText-primary": {
-                    fontSize: { xs: "1rem", sm: "1rem" }, // حجم primary
+                    fontSize: { xs: "0.8rem", sm: "1rem" }, // حجم primary
                   },
                   "& .MuiListItemText-secondary": {
                     fontSize: { xs: "0.8rem", sm: "1rem" }, // حجم secondary
@@ -205,7 +205,7 @@ const Profile = () => {
             <ListItem>
               <ListItemIcon>
                 <AccessTimeIcon
-                  sx={{ fontSize: { xs: "1rem", sm: "2.125rem" } }}
+                  sx={{ fontSize: { xs: "1rem", sm: "1.2rem" } }}
                   color="action"
                 />
               </ListItemIcon>
@@ -214,6 +214,15 @@ const Profile = () => {
                 secondary={formatDistanceToNow(new Date(user.lastLogin), {
                   addSuffix: true,
                 })}
+                //  primary and secondary text font size responsive
+                sx={{
+                  "& .MuiListItemText-primary": {
+                    fontSize: { xs: "0.8rem", sm: "1rem" }, // حجم primary
+                  },
+                  "& .MuiListItemText-secondary": {
+                    fontSize: { xs: "0.8rem", sm: "1rem" }, // حجم secondary
+                  },
+                }}
               />
             </ListItem>
             {/* يمكنك إضافة المزيد من الحقول هنا */}
@@ -223,11 +232,18 @@ const Profile = () => {
                 <ListItem>
                   <ListItemIcon>
                     <PersonIcon
-                      sx={{ fontSize: { xs: "1rem", sm: "2.125rem" } }}
+                      sx={{ fontSize: { xs: "1rem", sm: "1.2rem" } }}
                       color="action"
                     />
                   </ListItemIcon>
-                  <ListItemText primary="Role" secondary={user.role} />
+                  <ListItemText primary="Role" secondary={user.role}  sx={{
+                  "& .MuiListItemText-primary": {
+                    fontSize: { xs: "0.8rem", sm: "1rem" }, // حجم primary
+                  },
+                  "& .MuiListItemText-secondary": {
+                    fontSize: { xs: "0.8rem", sm: "1rem" }, // حجم secondary
+                  },
+                }}/>
                 </ListItem>
               </>
             )}
@@ -238,7 +254,7 @@ const Profile = () => {
           <Divider sx={{ mb: 2, fontWeight: "bold" }} />
           {/* قسم الحسابات المرتبطة */}
           <Box sx={{ width: "100%", mb: 4 }}>
-            <Typography variant="h6" sx={{ mb: 2 ,fontSize: { xs: "1rem", sm: "1.2rem" } }}>
+            <Typography variant="h6" sx={{ mb: 2 ,fontSize: { xs: ".8rem", sm: "1.2rem" } }}>
               Linked Accounts
             </Typography>
 
@@ -258,6 +274,14 @@ const Profile = () => {
                           ? "Local Account"
                           : `${provider} Account`
                       }
+                      sx={{
+                  "& .MuiListItemText-primary": {
+                    fontSize: { xs: "0.8rem", sm: "1rem" }, // حجم primary
+                  },
+                  "& .MuiListItemText-secondary": {
+                    fontSize: { xs: "0.8rem", sm: "1rem" }, // حجم secondary
+                  },
+                }}
                     />
                   </ListItem>
                 ))}
